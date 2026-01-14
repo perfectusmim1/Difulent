@@ -78,6 +78,13 @@ local Window = Library.CreateWindow({
 	HideSearchBar = false,
 	ScrollBarEnabled = true,
 	ToggleKey = Enum.KeyCode.RightShift,
+	OpenButton = {
+		Enabled = true,
+		Position = UDim2.new(0, 18, 0.5, 0),
+		Size = UDim2.fromOffset(46, 46),
+		Icon = "maximize-2",
+		Tooltip = "Open UI",
+	},
 	Configs = {
 		Enabled = true,
 		AutoSave = true,
@@ -205,6 +212,37 @@ popupButton = actionSection:AddButton({
 	end,
 })
 
+-- Tooltip demo (WindUI-like)
+if type(Window.BindTooltip) == "function" then
+	Window.Maid:GiveTask(Window:BindTooltip(popupButton.Frame, "Anchored context menu (items, separator, toggles).", { Delay = 0.2 }))
+end
+
+actionSection:AddDivider({})
+
+local quickRow = actionSection:AddGroup({ Gap = 10 })
+quickRow:AddButton({
+	Title = "Save quick",
+	Callback = function()
+		local ok, msg = Window:SaveConfig("quick")
+		Library:Notify({
+			Title = ok and "Config" or "Config Error",
+			Content = ok and "Saved as quick" or (msg or "Save failed"),
+			Duration = 2,
+		})
+	end,
+})
+quickRow:AddButton({
+	Title = "Load quick",
+	Callback = function()
+		local ok, msg = Window:LoadConfig("quick", true)
+		Library:Notify({
+			Title = ok and "Config" or "Config Error",
+			Content = ok and "Loaded quick" or (msg or "Load failed"),
+			Duration = 2,
+		})
+	end,
+})
+
 local featureToggle = actionSection:AddToggle({
 	Title = "Enable Feature",
 	Default = true,
@@ -214,6 +252,7 @@ local featureToggle = actionSection:AddToggle({
 	end,
 })
 
+local progressBar
 local volumeSlider = actionSection:AddSlider({
 	Title = "Volume",
 	Min = 0,
@@ -223,6 +262,9 @@ local volumeSlider = actionSection:AddSlider({
 	Suffix = "%",
 	Flag = "volume",
 	Callback = function(value)
+		if progressBar and type(progressBar.Set) == "function" then
+			progressBar:Set(value, true)
+		end
 		intro:Set({
 			Content = "Volume set to " .. tostring(value) .. "%.",
 		})
@@ -234,6 +276,15 @@ actionSection:AddButton({
 	Callback = function()
 		volumeSlider:Set(75)
 	end,
+})
+
+progressBar = actionSection:AddProgress({
+	Title = "Progress",
+	Desc = "Synced with Volume slider",
+	Min = 0,
+	Max = 100,
+	Default = 50,
+	Flag = "progress",
 })
 
 local modeDropdown = actionSection:AddDropdown({
@@ -456,6 +507,13 @@ Window:CreateConfigUI(Settings, {
 About:AddParagraph({
 	Title = "About",
 	Content = "Executor-only demo. Use the Configs section to save/load and export/import JSON.",
+})
+
+About:AddDivider({})
+
+About:AddCode({
+	Title = "Loadstring",
+	Code = 'local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/Difulent/refs/heads/main/dist/main.lua"))()',
 })
 
 About:AddButton({

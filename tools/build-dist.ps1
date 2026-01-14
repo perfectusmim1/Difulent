@@ -21,6 +21,11 @@ $moduleList = @(
   @{ Name = "Label"; Path = "src/Components/Elements/Label.lua" }
   @{ Name = "Paragraph"; Path = "src/Components/Elements/Paragraph.lua" }
   @{ Name = "Section"; Path = "src/Components/Elements/Section.lua" }
+  @{ Name = "Divider"; Path = "src/Components/Elements/Divider.lua" }
+  @{ Name = "Spacer"; Path = "src/Components/Elements/Spacer.lua" }
+  @{ Name = "Code"; Path = "src/Components/Elements/Code.lua" }
+  @{ Name = "Progress"; Path = "src/Components/Elements/Progress.lua" }
+  @{ Name = "Group"; Path = "src/Components/Elements/Group.lua" }
 
   @{ Name = "Tab"; Path = "src/Components/Tab.lua" }
   @{ Name = "Window"; Path = "src/Components/Window.lua" }
@@ -56,6 +61,11 @@ $replacements = @{
   "require(script.Parent.Elements.Label)" = 'requireModule("Label")'
   "require(script.Parent.Elements.Paragraph)" = 'requireModule("Paragraph")'
   "require(script.Parent.Elements.Section)" = 'requireModule("Section")'
+  "require(script.Parent.Elements.Divider)" = 'requireModule("Divider")'
+  "require(script.Parent.Elements.Spacer)" = 'requireModule("Spacer")'
+  "require(script.Parent.Elements.Code)" = 'requireModule("Code")'
+  "require(script.Parent.Elements.Progress)" = 'requireModule("Progress")'
+  "require(script.Parent.Elements.Group)" = 'requireModule("Group")'
 
   "require(script.Parent.Button)" = 'requireModule("Button")'
   "require(script.Parent.Toggle)" = 'requireModule("Toggle")'
@@ -66,6 +76,11 @@ $replacements = @{
   "require(script.Parent.ColorPicker)" = 'requireModule("ColorPicker")'
   "require(script.Parent.Label)" = 'requireModule("Label")'
   "require(script.Parent.Paragraph)" = 'requireModule("Paragraph")'
+  "require(script.Parent.Divider)" = 'requireModule("Divider")'
+  "require(script.Parent.Spacer)" = 'requireModule("Spacer")'
+  "require(script.Parent.Code)" = 'requireModule("Code")'
+  "require(script.Parent.Progress)" = 'requireModule("Progress")'
+  "require(script.Parent.Group)" = 'requireModule("Group")'
 }
 
 $sb = New-Object System.Text.StringBuilder

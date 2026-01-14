@@ -145,7 +145,7 @@ function ColorPicker:Open()
 	end
 	self.PopupMaid = Maid.new()
 
-	local main = self.Window and self.Window.Main or self.Frame
+	local main = self.Window and (self.Window.OverlayLayer or self.Window.Main) or self.Frame
 
 	local overlay = Instance.new("TextButton")
 	overlay.Name = "ColorPickerOverlay"
@@ -153,7 +153,7 @@ function ColorPicker:Open()
 	overlay.Text = ""
 	overlay.AutoButtonColor = false
 	overlay.Size = UDim2.fromScale(1, 1)
-	overlay.ZIndex = 90
+	overlay.ZIndex = 320
 	overlay.Parent = main
 	self.PopupMaid:GiveTask(overlay)
 
@@ -167,7 +167,7 @@ function ColorPicker:Open()
 		BackgroundColor3 = "Surface",
 		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
-		ZIndex = 100,
+		ZIndex = 330,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(self.PopupFrame, 12)
@@ -196,7 +196,7 @@ function ColorPicker:Open()
 	self.Preview.Size = UDim2.new(1, 0, 0, 34)
 	self.Preview.BackgroundColor3 = self.Value
 	self.Preview.BorderSizePixel = 0
-	self.Preview.ZIndex = 101
+	self.Preview.ZIndex = 331
 	self.Preview.Parent = self.PopupFrame
 	Creator.AddCorner(self.Preview, 10)
 	Creator.AddStroke(self.Preview, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
@@ -210,7 +210,7 @@ function ColorPicker:Open()
 		local row = Instance.new("Frame")
 		row.BackgroundTransparency = 1
 		row.Size = UDim2.new(1, 0, 0, 34)
-		row.ZIndex = 101
+		row.ZIndex = 331
 		row.Parent = self.PopupFrame
 
 		local label = Creator.New("TextLabel", {

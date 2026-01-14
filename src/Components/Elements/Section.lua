@@ -170,5 +170,10 @@ function Section:AddDropdown(options) return self:_register(require(script.Paren
 function Section:AddKeybind(options) return self:_register(require(script.Parent.Keybind).new(self.Content, options, self.Window)) end
 function Section:AddColorPicker(options) return self:_register(require(script.Parent.ColorPicker).new(self.Content, options, self.Window)) end
 function Section:AddSection(options) return self:_register(Section.new(self.Content, options, self.Window)) end
+function Section:AddDivider(options) return self:_register(require(script.Parent.Divider).new(self.Content, options, self.Window)) end
+function Section:AddSpacer(options) return self:_register(require(script.Parent.Spacer).new(self.Content, options, self.Window)) end
+function Section:AddCode(options) return self:_register(require(script.Parent.Code).new(self.Content, options, self.Window)) end
+function Section:AddProgress(options) return self:_register(require(script.Parent.Progress).new(self.Content, options, self.Window)) end
+function Section:AddGroup(options) return require(script.Parent.Group).new(self.Content, options, self.Window) end
 
 return Section

@@ -189,6 +189,7 @@ function Dropdown:_buildList(filterText)
 				Text = "",
 				AutoButtonColor = false,
 				BorderSizePixel = 0,
+				ZIndex = 332,
 				ThemeTag = { BackgroundColor3 = "Surface2" },
 			})
 			Creator.AddCorner(row, 10)
@@ -204,6 +205,7 @@ function Dropdown:_buildList(filterText)
 				TextColor3 = "SubText",
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextTruncate = Enum.TextTruncate.AtEnd,
+				ZIndex = 333,
 				ThemeTag = { TextColor3 = "SubText" },
 			})
 
@@ -215,6 +217,7 @@ function Dropdown:_buildList(filterText)
 				Image = Utility.GetIcon("check"),
 				ImageColor3 = "Accent",
 				Visible = false,
+				ZIndex = 333,
 				ThemeTag = { ImageColor3 = "Accent" },
 			})
 
@@ -274,7 +277,7 @@ function Dropdown:Open()
 
 	Utility.Tween(self.Chevron, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Rotation = 180 })
 
-	local main = self.Window and self.Window.Main or self.Display
+	local main = self.Window and (self.Window.OverlayLayer or self.Window.Main) or self.Display
 
 	self.Overlay = Instance.new("TextButton")
 	self.Overlay.Name = "DropdownOverlay"
@@ -282,7 +285,7 @@ function Dropdown:Open()
 	self.Overlay.Text = ""
 	self.Overlay.AutoButtonColor = false
 	self.Overlay.Size = UDim2.fromScale(1, 1)
-	self.Overlay.ZIndex = 90
+	self.Overlay.ZIndex = 320
 	self.Overlay.Parent = main
 
 	self.PopupMaid:GiveTask(self.Overlay.MouseButton1Click:Connect(function()
@@ -295,7 +298,7 @@ function Dropdown:Open()
 		BackgroundColor3 = "Surface",
 		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
-		ZIndex = 100,
+		ZIndex = 330,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(self.ListFrame, 12)
@@ -335,7 +338,7 @@ function Dropdown:Open()
 		PlaceholderColor3 = "Placeholder",
 		ClearTextOnFocus = false,
 		BorderSizePixel = 0,
-		ZIndex = 101,
+		ZIndex = 331,
 		ThemeTag = { BackgroundColor3 = "Surface2", TextColor3 = "Text", PlaceholderColor3 = "Placeholder" },
 	})
 	Creator.AddCorner(self.SearchBox, 10)
@@ -349,7 +352,7 @@ function Dropdown:Open()
 		ScrollBarThickness = 3,
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		ZIndex = 101,
+		ZIndex = 331,
 	})
 
 	local layout = Instance.new("UIListLayout")

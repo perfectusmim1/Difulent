@@ -111,6 +111,7 @@ function Window.new(options)
 
 	self:_buildUI()
 	self:_hookInput()
+	self:_setupOpenButton()
 
 	return self
 end
@@ -224,6 +225,17 @@ function Window:_buildUI()
 	self.Shadow.ZIndex = 1
 	self.Shadow.Parent = self.Gui
 	self.Maid:GiveTask(self.Shadow)
+
+	-- Overlay layer (popups / dropdowns / tooltips). Keep outside Main to avoid clipping.
+	self.OverlayLayer = Instance.new("Frame")
+	self.OverlayLayer.Name = "OverlayLayer"
+	self.OverlayLayer.BackgroundTransparency = 1
+	self.OverlayLayer.Size = UDim2.fromScale(1, 1)
+	self.OverlayLayer.Position = UDim2.fromScale(0, 0)
+	self.OverlayLayer.ClipsDescendants = false
+	self.OverlayLayer.ZIndex = 250
+	self.OverlayLayer.Parent = self.Gui
+	self.Maid:GiveTask(self.OverlayLayer)
 
 	-- Main frame
 	self.Main = Creator.New("Frame", {
@@ -733,6 +745,282 @@ function Window:_enableResizeGrip()
 		local newH = math.clamp(startSize.Y + delta.Y, min.Y, max.Y)
 		self.Main.Size = UDim2.fromOffset(newW, newH)
 	end))
+end
+
+function Window:BindTooltip(target, text, options)
+	if typeof(target) ~= "Instance" or not target:IsA("GuiObject") then
+		return nil
+	end
+	if type(text) ~= "string" or text == "" then
+		return nil
+	end
+
+	options = options or {}
+	local delaySeconds = tonumber(options.Delay) or 0.35
+	local maxWidth = tonumber(options.MaxWidth) or 320
+
+	local maid = Maid.new()
+	local hovering = false
+	local showThread = nil
+	local tooltip = nil
+	local moveConn = nil
+
+	local function destroyTooltip()
+		if moveConn then
+			moveConn:Disconnect()
+			moveConn = nil
+		end
+		if tooltip then
+			tooltip:Destroy()
+			tooltip = nil
+		end
+	end
+
+	local function updatePos()
+		if not tooltip then
+			return
+		end
+		local layer = self.OverlayLayer or self.Main
+		local layerPos = layer.AbsolutePosition
+		local layerSize = layer.AbsoluteSize
+
+		local mousePos = UserInputService:GetMouseLocation()
+		local rel = (mousePos - layerPos) + Vector2.new(12, 16)
+
+		local tipSize = tooltip.AbsoluteSize
+		local x = math.clamp(rel.X, 8, math.max(8, layerSize.X - tipSize.X - 8))
+		local y = math.clamp(rel.Y, 8, math.max(8, layerSize.Y - tipSize.Y - 8))
+		tooltip.Position = UDim2.fromOffset(x, y)
+	end
+
+	maid:GiveTask(target.MouseEnter:Connect(function()
+		hovering = true
+		if showThread then
+			task.cancel(showThread)
+			showThread = nil
+		end
+		showThread = task.delay(delaySeconds, function()
+			if not hovering then
+				return
+			end
+			if not (self.Gui and self.Gui.Enabled) then
+				return
+			end
+
+			local layer = self.OverlayLayer or self.Main
+			tooltip = Creator.New("Frame", {
+				Parent = layer,
+				Size = UDim2.fromOffset(maxWidth, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundColor3 = "Surface",
+				BackgroundTransparency = 0.06,
+				BorderSizePixel = 0,
+				ZIndex = 340,
+				ThemeTag = { BackgroundColor3 = "Surface" },
+			})
+			Creator.AddCorner(tooltip, 10)
+			Creator.AddStroke(tooltip, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+			Utility.AddGradient(tooltip, "Surface2", "Surface", NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0.05),
+				NumberSequenceKeypoint.new(1, 0.12),
+			}))
+			Creator.AddPadding(tooltip, 10)
+
+			Creator.New("TextLabel", {
+				Parent = tooltip,
+				Size = UDim2.new(1, 0, 0, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundTransparency = 1,
+				Text = text,
+				Font = Enum.Font.Gotham,
+				TextSize = 12,
+				TextColor3 = "SubText",
+				TextTransparency = 0.05,
+				TextWrapped = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				ZIndex = 341,
+				ThemeTag = { TextColor3 = "SubText" },
+			})
+
+			updatePos()
+			moveConn = UserInputService.InputChanged:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseMovement then
+					updatePos()
+				end
+			end)
+		end)
+	end))
+
+	maid:GiveTask(target.MouseLeave:Connect(function()
+		hovering = false
+		if showThread then
+			task.cancel(showThread)
+			showThread = nil
+		end
+		destroyTooltip()
+	end))
+
+	maid:GiveTask(function()
+		hovering = false
+		if showThread then
+			task.cancel(showThread)
+			showThread = nil
+		end
+		destroyTooltip()
+	end)
+
+	return maid
+end
+
+function Window:_setupOpenButton()
+	local cfg = self.Options.OpenButton
+	if cfg == nil or cfg == false then
+		return
+	end
+	if cfg == true then
+		cfg = { Enabled = true }
+	end
+	if type(cfg) ~= "table" then
+		return
+	end
+	if cfg.Enabled == false then
+		return
+	end
+
+	local parent = self.Gui and self.Gui.Parent
+	if not parent then
+		return
+	end
+
+	local openGui = Instance.new("ScreenGui")
+	openGui.Name = "PhantasmOpen_" .. tostring(self.Id)
+	openGui.IgnoreGuiInset = true
+	openGui.ResetOnSpawn = false
+	openGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	openGui.Parent = parent
+	self.OpenButtonGui = openGui
+	self.Maid:GiveTask(openGui)
+
+	local size = cfg.Size
+	if typeof(size) ~= "UDim2" then
+		size = UDim2.fromOffset(46, 46)
+	end
+
+	local position = cfg.Position
+	if typeof(position) ~= "UDim2" then
+		position = UDim2.new(0, 16, 0.5, 0)
+	end
+
+	local anchor = cfg.AnchorPoint
+	if typeof(anchor) ~= "Vector2" then
+		anchor = Vector2.new(0, 0.5)
+	end
+
+	local btn = Creator.New("TextButton", {
+		Parent = openGui,
+		Size = size,
+		Position = position,
+		AnchorPoint = anchor,
+		BackgroundColor3 = "Surface",
+		BackgroundTransparency = 0.12,
+		Text = "",
+		AutoButtonColor = false,
+		ZIndex = 500,
+		ThemeTag = { BackgroundColor3 = "Surface" },
+	})
+	Creator.AddCorner(btn, 14)
+	local stroke = Creator.AddStroke(btn, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(btn, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
+	Utility.AddGradient(stroke, "Outline", "Outline", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.15),
+		NumberSequenceKeypoint.new(0.5, 0.7),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}), 90)
+
+	local iconName = cfg.Icon or "maximize-2"
+	local img = Creator.New("ImageLabel", {
+		Parent = btn,
+		Size = UDim2.fromOffset(18, 18),
+		Position = UDim2.new(0.5, -9, 0.5, -9),
+		BackgroundTransparency = 1,
+		Image = Utility.GetIcon(iconName),
+		ImageColor3 = "Icon",
+		ZIndex = 501,
+		ThemeTag = { ImageColor3 = "Icon" },
+	})
+
+	btn.Visible = self.Enabled ~= true
+	self.OpenButton = btn
+
+	self.Maid:GiveTask(btn.MouseEnter:Connect(function()
+		Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 0.06,
+		})
+		Utility.Tween(img, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			ImageTransparency = 0,
+		})
+	end))
+
+	self.Maid:GiveTask(btn.MouseLeave:Connect(function()
+		Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 0.12,
+		})
+		Utility.Tween(img, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			ImageTransparency = 0,
+		})
+	end))
+
+	self.Maid:GiveTask(btn.MouseButton1Click:Connect(function()
+		self:Open()
+	end))
+
+	if type(cfg.Tooltip) == "string" and cfg.Tooltip ~= "" then
+		local tip = Creator.New("TextLabel", {
+			Parent = btn,
+			AutomaticSize = Enum.AutomaticSize.XY,
+			AnchorPoint = Vector2.new(0.5, 1),
+			Position = UDim2.new(0.5, 0, 0, -8),
+			BackgroundColor3 = "Surface",
+			BackgroundTransparency = 0.06,
+			BorderSizePixel = 0,
+			Text = cfg.Tooltip,
+			Font = Enum.Font.Gotham,
+			TextSize = 12,
+			TextColor3 = "Text",
+			TextTransparency = 0.05,
+			ZIndex = 520,
+			Visible = false,
+			ThemeTag = { BackgroundColor3 = "Surface", TextColor3 = "Text" },
+		})
+		Creator.AddCorner(tip, 10)
+		Creator.AddStroke(tip, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+		Creator.AddPadding(tip, 8)
+		Utility.AddGradient(tip, "Surface2", "Surface", NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.05),
+			NumberSequenceKeypoint.new(1, 0.12),
+		}))
+
+		self.Maid:GiveTask(btn.MouseEnter:Connect(function()
+			tip.Visible = true
+		end))
+		self.Maid:GiveTask(btn.MouseLeave:Connect(function()
+			tip.Visible = false
+		end))
+	end
+
+	if self.OnOpen then
+		self.Maid:GiveTask(self.OnOpen:Connect(function()
+			btn.Visible = false
+		end))
+	end
+	if self.OnClose then
+		self.Maid:GiveTask(self.OnClose:Connect(function()
+			btn.Visible = true
+		end))
+	end
 end
 
 function Window:_applyTabFilter(text)
@@ -1255,7 +1543,7 @@ function Window:Popup(options)
 	local maid = Maid.new()
 	self.PopupMaid = maid
 
-	local main = self.Main
+	local layer = self.OverlayLayer or self.Main
 	local overlay = Instance.new("TextButton")
 	overlay.Name = "PopupOverlay"
 	overlay.AutoButtonColor = false
@@ -1263,7 +1551,7 @@ function Window:Popup(options)
 	overlay.BackgroundTransparency = 1
 	overlay.Size = UDim2.fromScale(1, 1)
 	overlay.ZIndex = 350
-	overlay.Parent = main
+	overlay.Parent = layer
 	maid:GiveTask(overlay)
 
 	maid:GiveTask(overlay.MouseButton1Click:Connect(function()
@@ -1271,7 +1559,7 @@ function Window:Popup(options)
 	end))
 
 	local frame = Creator.New("Frame", {
-		Parent = main,
+		Parent = layer,
 		Size = UDim2.fromOffset(options.Width or 200, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = "Surface",
@@ -1300,7 +1588,7 @@ function Window:Popup(options)
 			return options.Position
 		end
 		if typeof(options.Position) == "UDim2" then
-			return main.AbsolutePosition + Vector2.new(options.Position.X.Offset, options.Position.Y.Offset)
+			return layer.AbsolutePosition + Vector2.new(options.Position.X.Offset, options.Position.Y.Offset)
 		end
 		local target = options.Target or options.Anchor
 		if typeof(target) == "Instance" and target:IsA("GuiObject") then
@@ -1312,11 +1600,11 @@ function Window:Popup(options)
 
 	local function clampPosition()
 		local pos = anchorPosition()
-		local mainPos = main.AbsolutePosition
-		local rel = pos - mainPos
+		local layerPos = layer.AbsolutePosition
+		local rel = pos - layerPos
 		local size = frame.AbsoluteSize
-		local maxX = main.AbsoluteSize.X - size.X - 8
-		local maxY = main.AbsoluteSize.Y - size.Y - 8
+		local maxX = layer.AbsoluteSize.X - size.X - 8
+		local maxY = layer.AbsoluteSize.Y - size.Y - 8
 		local x = math.clamp(rel.X, 8, math.max(8, maxX))
 		local y = math.clamp(rel.Y, 8, math.max(8, maxY))
 		frame.Position = UDim2.fromOffset(x, y)

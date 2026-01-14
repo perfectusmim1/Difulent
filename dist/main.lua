@@ -1476,6 +1476,7 @@ function Dropdown:_buildList(filterText)
 				Text = "",
 				AutoButtonColor = false,
 				BorderSizePixel = 0,
+				ZIndex = 332,
 				ThemeTag = { BackgroundColor3 = "Surface2" },
 			})
 			Creator.AddCorner(row, 10)
@@ -1491,6 +1492,7 @@ function Dropdown:_buildList(filterText)
 				TextColor3 = "SubText",
 				TextXAlignment = Enum.TextXAlignment.Left,
 				TextTruncate = Enum.TextTruncate.AtEnd,
+				ZIndex = 333,
 				ThemeTag = { TextColor3 = "SubText" },
 			})
 
@@ -1502,6 +1504,7 @@ function Dropdown:_buildList(filterText)
 				Image = Utility.GetIcon("check"),
 				ImageColor3 = "Accent",
 				Visible = false,
+				ZIndex = 333,
 				ThemeTag = { ImageColor3 = "Accent" },
 			})
 
@@ -1561,7 +1564,7 @@ function Dropdown:Open()
 
 	Utility.Tween(self.Chevron, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Rotation = 180 })
 
-	local main = self.Window and self.Window.Main or self.Display
+	local main = self.Window and (self.Window.OverlayLayer or self.Window.Main) or self.Display
 
 	self.Overlay = Instance.new("TextButton")
 	self.Overlay.Name = "DropdownOverlay"
@@ -1569,7 +1572,7 @@ function Dropdown:Open()
 	self.Overlay.Text = ""
 	self.Overlay.AutoButtonColor = false
 	self.Overlay.Size = UDim2.fromScale(1, 1)
-	self.Overlay.ZIndex = 90
+	self.Overlay.ZIndex = 320
 	self.Overlay.Parent = main
 
 	self.PopupMaid:GiveTask(self.Overlay.MouseButton1Click:Connect(function()
@@ -1582,7 +1585,7 @@ function Dropdown:Open()
 		BackgroundColor3 = "Surface",
 		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
-		ZIndex = 100,
+		ZIndex = 330,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(self.ListFrame, 12)
@@ -1622,7 +1625,7 @@ function Dropdown:Open()
 		PlaceholderColor3 = "Placeholder",
 		ClearTextOnFocus = false,
 		BorderSizePixel = 0,
-		ZIndex = 101,
+		ZIndex = 331,
 		ThemeTag = { BackgroundColor3 = "Surface2", TextColor3 = "Text", PlaceholderColor3 = "Placeholder" },
 	})
 	Creator.AddCorner(self.SearchBox, 10)
@@ -1636,7 +1639,7 @@ function Dropdown:Open()
 		ScrollBarThickness = 3,
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		CanvasSize = UDim2.new(0, 0, 0, 0),
-		ZIndex = 101,
+		ZIndex = 331,
 	})
 
 	local layout = Instance.new("UIListLayout")
@@ -2245,7 +2248,7 @@ function ColorPicker:Open()
 	end
 	self.PopupMaid = Maid.new()
 
-	local main = self.Window and self.Window.Main or self.Frame
+	local main = self.Window and (self.Window.OverlayLayer or self.Window.Main) or self.Frame
 
 	local overlay = Instance.new("TextButton")
 	overlay.Name = "ColorPickerOverlay"
@@ -2253,7 +2256,7 @@ function ColorPicker:Open()
 	overlay.Text = ""
 	overlay.AutoButtonColor = false
 	overlay.Size = UDim2.fromScale(1, 1)
-	overlay.ZIndex = 90
+	overlay.ZIndex = 320
 	overlay.Parent = main
 	self.PopupMaid:GiveTask(overlay)
 
@@ -2267,7 +2270,7 @@ function ColorPicker:Open()
 		BackgroundColor3 = "Surface",
 		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
-		ZIndex = 100,
+		ZIndex = 330,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(self.PopupFrame, 12)
@@ -2296,7 +2299,7 @@ function ColorPicker:Open()
 	self.Preview.Size = UDim2.new(1, 0, 0, 34)
 	self.Preview.BackgroundColor3 = self.Value
 	self.Preview.BorderSizePixel = 0
-	self.Preview.ZIndex = 101
+	self.Preview.ZIndex = 331
 	self.Preview.Parent = self.PopupFrame
 	Creator.AddCorner(self.Preview, 10)
 	Creator.AddStroke(self.Preview, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
@@ -2310,7 +2313,7 @@ function ColorPicker:Open()
 		local row = Instance.new("Frame")
 		row.BackgroundTransparency = 1
 		row.Size = UDim2.new(1, 0, 0, 34)
-		row.ZIndex = 101
+		row.ZIndex = 331
 		row.Parent = self.PopupFrame
 
 		local label = Creator.New("TextLabel", {
@@ -2780,8 +2783,602 @@ function Section:AddDropdown(options) return self:_register(requireModule("Dropd
 function Section:AddKeybind(options) return self:_register(requireModule("Keybind").new(self.Content, options, self.Window)) end
 function Section:AddColorPicker(options) return self:_register(requireModule("ColorPicker").new(self.Content, options, self.Window)) end
 function Section:AddSection(options) return self:_register(Section.new(self.Content, options, self.Window)) end
+function Section:AddDivider(options) return self:_register(requireModule("Divider").new(self.Content, options, self.Window)) end
+function Section:AddSpacer(options) return self:_register(requireModule("Spacer").new(self.Content, options, self.Window)) end
+function Section:AddCode(options) return self:_register(requireModule("Code").new(self.Content, options, self.Window)) end
+function Section:AddProgress(options) return self:_register(requireModule("Progress").new(self.Content, options, self.Window)) end
+function Section:AddGroup(options) return requireModule("Group").new(self.Content, options, self.Window) end
 
 return Section
+end
+
+-- [[ Module: Divider ]] --
+modules["Divider"] = function()
+-- Phantasm Divider
+local Creator = requireModule("Creator")
+local Maid = requireModule("Maid")
+
+local Divider = {}
+Divider.__index = Divider
+
+function Divider.new(container, options)
+	local self = setmetatable({}, Divider)
+	options = options or {}
+
+	self.Maid = Maid.new()
+
+	local thickness = tonumber(options.Thickness) or 1
+	local paddingY = tonumber(options.Padding) or 8
+	local inset = tonumber(options.Inset) or 2
+
+	self.Frame = Instance.new("Frame")
+	self.Frame.Name = "Divider"
+	self.Frame.BackgroundTransparency = 1
+	self.Frame.Size = UDim2.new(1, 0, 0, (paddingY * 2) + thickness)
+	self.Frame.Parent = container
+	self.Maid:GiveTask(self.Frame)
+
+	self.Line = Creator.New("Frame", {
+		Parent = self.Frame,
+		Size = UDim2.new(1, -inset * 2, 0, thickness),
+		Position = UDim2.new(0, inset, 0.5, -math.floor(thickness / 2)),
+		BackgroundColor3 = "Outline",
+		BackgroundTransparency = 0.7,
+		BorderSizePixel = 0,
+		ThemeTag = { BackgroundColor3 = "Outline" },
+	})
+
+	return self
+end
+
+function Divider:Destroy()
+	self.Maid:DoCleaning()
+end
+
+return Divider
+end
+
+-- [[ Module: Spacer ]] --
+modules["Spacer"] = function()
+-- Phantasm Spacer
+local Maid = requireModule("Maid")
+
+local Spacer = {}
+Spacer.__index = Spacer
+
+function Spacer.new(container, options)
+	local self = setmetatable({}, Spacer)
+	options = options or {}
+
+	self.Maid = Maid.new()
+
+	local height = tonumber(options.Size or options.Height) or 10
+
+	self.Frame = Instance.new("Frame")
+	self.Frame.Name = "Spacer"
+	self.Frame.BackgroundTransparency = 1
+	self.Frame.Size = UDim2.new(1, 0, 0, height)
+	self.Frame.Parent = container
+	self.Maid:GiveTask(self.Frame)
+
+	return self
+end
+
+function Spacer:SetSize(height)
+	height = tonumber(height) or 10
+	self.Frame.Size = UDim2.new(1, 0, 0, height)
+end
+
+function Spacer:Destroy()
+	self.Maid:DoCleaning()
+end
+
+return Spacer
+end
+
+-- [[ Module: Code ]] --
+modules["Code"] = function()
+-- Phantasm Code Block
+local Creator = requireModule("Creator")
+local Utility = requireModule("Utility")
+local Maid = requireModule("Maid")
+
+local Code = {}
+Code.__index = Code
+
+function Code.new(container, options, window)
+	local self = setmetatable({}, Code)
+	options = options or {}
+
+	self.Maid = Maid.new()
+	self.Window = window
+	self.Options = options
+
+	self.Code = tostring(options.Code or options.Content or "")
+	self._baseTransparency = 0.12
+
+	local hasTitle = type(options.Title) == "string" and options.Title ~= ""
+	local title = hasTitle and options.Title or "Code"
+
+	self.Frame = Creator.New("Frame", {
+		Parent = container,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundColor3 = "Surface",
+		BackgroundTransparency = self._baseTransparency,
+		BorderSizePixel = 0,
+		ThemeTag = { BackgroundColor3 = "Surface" },
+	})
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
+	Creator.AddPadding(self.Frame, 14)
+	self.Maid:GiveTask(self.Frame)
+
+	local header = Instance.new("Frame")
+	header.BackgroundTransparency = 1
+	header.Size = UDim2.new(1, 0, 0, 18)
+	header.Parent = self.Frame
+	self.Maid:GiveTask(header)
+
+	self.TitleLabel = Creator.New("TextLabel", {
+		Parent = header,
+		Size = UDim2.new(1, -40, 1, 0),
+		BackgroundTransparency = 1,
+		Text = title,
+		Font = Enum.Font.GothamSemibold,
+		TextSize = 13,
+		TextColor3 = "Text",
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ThemeTag = { TextColor3 = "Text" },
+	})
+
+	self.CopyButton = Creator.New("TextButton", {
+		Parent = header,
+		Size = UDim2.fromOffset(30, 18),
+		Position = UDim2.new(1, -30, 0, 0),
+		BackgroundColor3 = "Surface2",
+		BackgroundTransparency = 0.85,
+		Text = "",
+		AutoButtonColor = false,
+		ThemeTag = { BackgroundColor3 = "Surface2" },
+	})
+	Creator.AddCorner(self.CopyButton, 8)
+
+	self.CopyIcon = Creator.New("ImageLabel", {
+		Parent = self.CopyButton,
+		Size = UDim2.fromOffset(14, 14),
+		Position = UDim2.new(0.5, -7, 0.5, -7),
+		BackgroundTransparency = 1,
+		Image = Utility.GetIcon("copy"),
+		ImageColor3 = "Icon",
+		ThemeTag = { ImageColor3 = "Icon" },
+	})
+
+	self.Maid:GiveTask(self.CopyButton.MouseEnter:Connect(function()
+		Utility.Tween(self.CopyButton, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 0.6,
+		})
+	end))
+	self.Maid:GiveTask(self.CopyButton.MouseLeave:Connect(function()
+		Utility.Tween(self.CopyButton, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 0.85,
+		})
+	end))
+
+	self.CodeBox = Creator.New("TextBox", {
+		Parent = self.Frame,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundColor3 = "Surface2",
+		BackgroundTransparency = 0.3,
+		BorderSizePixel = 0,
+		ClearTextOnFocus = false,
+		Text = self.Code,
+		Font = Enum.Font.Code,
+		TextSize = 13,
+		TextColor3 = "Text",
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextYAlignment = Enum.TextYAlignment.Top,
+		TextWrapped = true,
+		MultiLine = true,
+		TextEditable = false,
+		ThemeTag = { BackgroundColor3 = "Surface2", TextColor3 = "Text" },
+	})
+	Creator.AddCorner(self.CodeBox, 12)
+	Creator.AddStroke(self.CodeBox, { Color = "Outline", Thickness = 1, Transparency = 0.75, ThemeTag = { Color = "Outline" } })
+	Creator.AddPadding(self.CodeBox, 10)
+
+	self.Maid:GiveTask(self.CopyButton.MouseButton1Click:Connect(function()
+		local ok = false
+		if type(setclipboard) == "function" then
+			ok = pcall(function()
+				setclipboard(self.Code)
+			end)
+		end
+		if ok then
+			if self.Window and self.Window.Notify then
+				self.Window:Notify({ Title = "Code", Content = "Copied to clipboard.", Duration = 2 })
+			end
+			return
+		end
+		if self.Window and self.Window.Dialog then
+			self.Window:Dialog({
+				Title = "Copy Code",
+				Content = "Your executor doesn't support clipboard. Select and copy manually:",
+				Input = { Default = self.Code, Multiline = true, ReadOnly = true },
+				Buttons = { { Title = "Close", Primary = true } },
+			})
+		end
+	end))
+
+	local layout = Instance.new("UIListLayout")
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Padding = UDim.new(0, 10)
+	layout.Parent = self.Frame
+	self.Maid:GiveTask(layout)
+
+	return self
+end
+
+function Code:Set(code)
+	self.Code = tostring(code or "")
+	self.CodeBox.Text = self.Code
+end
+
+function Code:Get()
+	return self.Code
+end
+
+function Code:Destroy()
+	self.Maid:DoCleaning()
+end
+
+return Code
+end
+
+-- [[ Module: Progress ]] --
+modules["Progress"] = function()
+-- Phantasm Progress Bar
+local Creator = requireModule("Creator")
+local Utility = requireModule("Utility")
+local Maid = requireModule("Maid")
+
+local Progress = {}
+Progress.__index = Progress
+
+function Progress.new(container, options, window)
+	local self = setmetatable({}, Progress)
+	options = options or {}
+
+	self.Maid = Maid.new()
+	self.Window = window
+	self.Options = options
+
+	self.Min = tonumber(options.Min) or 0
+	self.Max = tonumber(options.Max) or 100
+	if self.Max == self.Min then
+		self.Max = self.Min + 1
+	end
+
+	self.Value = tonumber(options.Default) or self.Min
+	self.Callback = options.Callback or function() end
+	self.Flag = options.Flag
+	self.Disabled = false
+	self.Locked = false
+	self._baseTransparency = 0.12
+
+	if self.Flag and self.Window then
+		self.Window.Flags[self.Flag] = self.Value
+	end
+
+	local hasDesc = type(options.Desc) == "string" and options.Desc ~= ""
+	local height = hasDesc and 74 or 58
+
+	self.Frame = Creator.New("Frame", {
+		Parent = container,
+		Size = UDim2.new(1, 0, 0, height),
+		BackgroundColor3 = "Surface",
+		BackgroundTransparency = self._baseTransparency,
+		BorderSizePixel = 0,
+		ThemeTag = { BackgroundColor3 = "Surface" },
+	})
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
+	Creator.AddPadding(self.Frame, 14)
+	self.Maid:GiveTask(self.Frame)
+
+	self.TitleLabel = Creator.New("TextLabel", {
+		Parent = self.Frame,
+		Size = UDim2.new(1, -90, 0, 18),
+		BackgroundTransparency = 1,
+		Text = options.Title or "Progress",
+		Font = Enum.Font.GothamSemibold,
+		TextSize = 13,
+		TextColor3 = "Text",
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ThemeTag = { TextColor3 = "Text" },
+	})
+
+	self.ValueLabel = Creator.New("TextLabel", {
+		Parent = self.Frame,
+		Size = UDim2.new(0, 90, 0, 18),
+		Position = UDim2.new(1, -90, 0, 0),
+		BackgroundTransparency = 1,
+		Text = "",
+		Font = Enum.Font.Gotham,
+		TextSize = 13,
+		TextColor3 = "SubText",
+		TextXAlignment = Enum.TextXAlignment.Right,
+		ThemeTag = { TextColor3 = "SubText" },
+	})
+
+	if hasDesc then
+		self.DescLabel = Creator.New("TextLabel", {
+			Parent = self.Frame,
+			Size = UDim2.new(1, 0, 0, 16),
+			Position = UDim2.new(0, 0, 0, 20),
+			BackgroundTransparency = 1,
+			Text = options.Desc,
+			Font = Enum.Font.Gotham,
+			TextSize = 12,
+			TextColor3 = "SubText",
+			TextTransparency = 0.15,
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextTruncate = Enum.TextTruncate.AtEnd,
+			ThemeTag = { TextColor3 = "SubText" },
+		})
+	end
+
+	local barY = hasDesc and 46 or 30
+	self.Bar = Creator.New("Frame", {
+		Parent = self.Frame,
+		Size = UDim2.new(1, 0, 0, 8),
+		Position = UDim2.new(0, 0, 0, barY),
+		BackgroundColor3 = "Surface2",
+		BackgroundTransparency = 0.3,
+		BorderSizePixel = 0,
+		ThemeTag = { BackgroundColor3 = "Surface2" },
+	})
+	Creator.AddCorner(self.Bar, 8)
+
+	self.Fill = Creator.New("Frame", {
+		Parent = self.Bar,
+		Size = UDim2.new(0, 0, 1, 0),
+		BackgroundColor3 = "Accent",
+		BorderSizePixel = 0,
+		ThemeTag = { BackgroundColor3 = "Accent" },
+	})
+	Creator.AddCorner(self.Fill, 8)
+
+	self:Set(self.Value, true)
+	self:_syncState()
+	return self
+end
+
+function Progress:_toAlpha(value)
+	local v = math.clamp(value, self.Min, self.Max)
+	return (v - self.Min) / (self.Max - self.Min)
+end
+
+function Progress:Set(value, silent)
+	value = tonumber(value) or self.Min
+	value = math.clamp(value, self.Min, self.Max)
+	self.Value = value
+
+	local alpha = self:_toAlpha(value)
+	Utility.Tween(self.Fill, TweenInfo.new(0.14, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Size = UDim2.new(alpha, 0, 1, 0),
+	})
+
+	local prefix = self.Options.Prefix or ""
+	local suffix = self.Options.Suffix or "%"
+	local percent = math.floor((alpha * 100) + 0.5)
+	self.ValueLabel.Text = prefix .. tostring(percent) .. suffix
+
+	if self.Flag and self.Window then
+		self.Window.Flags[self.Flag] = self.Value
+	end
+
+	if not silent then
+		if self.Flag and self.Window and type(self.Window._flagChanged) == "function" then
+			self.Window:_flagChanged(self.Flag)
+		end
+		self.Callback(self.Value)
+	end
+end
+
+function Progress:Get()
+	return self.Value
+end
+
+function Progress:SetEnabled(enabled)
+	self.Disabled = not enabled
+	self:_syncState()
+end
+
+function Progress:SetLocked(locked)
+	self.Locked = locked and true or false
+	self:_syncState()
+end
+
+function Progress:_syncState()
+	local blocked = self.Disabled or self.Locked
+	self.Frame.BackgroundTransparency = blocked and 0.6 or self._baseTransparency
+	self.TitleLabel.TextTransparency = blocked and 0.4 or 0
+	self.ValueLabel.TextTransparency = blocked and 0.5 or 0
+	if self.DescLabel then
+		self.DescLabel.TextTransparency = blocked and 0.55 or 0.15
+	end
+	self.Fill.BackgroundTransparency = blocked and 0.35 or 0
+end
+
+function Progress:Destroy()
+	self.Maid:DoCleaning()
+end
+
+return Progress
+end
+
+-- [[ Module: Group ]] --
+modules["Group"] = function()
+-- Phantasm Group (horizontal layout helper)
+local Maid = requireModule("Maid")
+
+local Group = {}
+Group.__index = Group
+
+function Group.new(container, options, window)
+	local self = setmetatable({}, Group)
+	options = options or {}
+
+	self.Maid = Maid.new()
+	self.Window = window
+	self.Options = options
+	self.Elements = {}
+
+	self.Frame = Instance.new("Frame")
+	self.Frame.Name = "Group"
+	self.Frame.BackgroundTransparency = 1
+	self.Frame.Size = UDim2.new(1, 0, 0, 0)
+	self.Frame.AutomaticSize = Enum.AutomaticSize.Y
+	self.Frame.Parent = container
+	self.Maid:GiveTask(self.Frame)
+
+	local layout = Instance.new("UIListLayout")
+	layout.FillDirection = Enum.FillDirection.Horizontal
+	layout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	layout.VerticalAlignment = Enum.VerticalAlignment.Top
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Padding = UDim.new(0, tonumber(options.Gap) or 10)
+	layout.Parent = self.Frame
+	self.Layout = layout
+	self.Maid:GiveTask(layout)
+
+	return self
+end
+
+function Group:_register(element)
+	if self.Window and type(self.Window._registerElement) == "function" then
+		return self.Window:_registerElement(element)
+	end
+	return element
+end
+
+function Group:_reflow()
+	local stretch = {}
+	for _, element in ipairs(self.Elements) do
+		if element and element.Frame and element.Frame:IsA("GuiObject") then
+			table.insert(stretch, element)
+		end
+	end
+	local count = #stretch
+	if count == 0 then
+		return
+	end
+
+	local gap = tonumber(self.Layout.Padding.Offset) or 0
+	local totalGap = gap * (count - 1)
+	local totalOffset = -totalGap
+	local baseOffset = math.floor(totalOffset / count)
+	local remainder = totalOffset - (baseOffset * count)
+
+	for i, element in ipairs(stretch) do
+		local extra = (i <= math.abs(remainder)) and -1 or 0
+		local sizeY = element.Frame.Size.Y
+		element.Frame.Size = UDim2.new(1 / count, baseOffset + extra, sizeY.Scale, sizeY.Offset)
+	end
+end
+
+function Group:AddButton(options)
+	local element = self:_register(requireModule("Button").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:AddToggle(options)
+	local element = self:_register(requireModule("Toggle").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:AddSlider(options)
+	local element = self:_register(requireModule("Slider").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:AddDropdown(options)
+	local element = self:_register(requireModule("Dropdown").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:AddInput(options)
+	local element = self:_register(requireModule("Input").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:AddKeybind(options)
+	local element = self:_register(requireModule("Keybind").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:AddColorPicker(options)
+	local element = self:_register(requireModule("ColorPicker").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:AddProgress(options)
+	local element = self:_register(requireModule("Progress").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:AddCode(options)
+	local element = self:_register(requireModule("Code").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:AddDivider(options)
+	local element = self:_register(requireModule("Divider").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:AddSpacer(options)
+	local element = self:_register(requireModule("Spacer").new(self.Frame, options, self.Window))
+	table.insert(self.Elements, element)
+	self:_reflow()
+	return element
+end
+
+function Group:Destroy()
+	self.Maid:DoCleaning()
+end
+
+return Group
 end
 
 -- [[ Module: Tab ]] --
@@ -2999,6 +3596,11 @@ function Tab:AddDropdown(options) return self:_register(requireModule("Dropdown"
 function Tab:AddKeybind(options) return self:_register(requireModule("Keybind").new(self.Container, options, self.Window)) end
 function Tab:AddColorPicker(options) return self:_register(requireModule("ColorPicker").new(self.Container, options, self.Window)) end
 function Tab:AddSection(options) return self:_register(requireModule("Section").new(self.Container, options, self.Window)) end
+function Tab:AddDivider(options) return self:_register(requireModule("Divider").new(self.Container, options, self.Window)) end
+function Tab:AddSpacer(options) return self:_register(requireModule("Spacer").new(self.Container, options, self.Window)) end
+function Tab:AddCode(options) return self:_register(requireModule("Code").new(self.Container, options, self.Window)) end
+function Tab:AddProgress(options) return self:_register(requireModule("Progress").new(self.Container, options, self.Window)) end
+function Tab:AddGroup(options) return requireModule("Group").new(self.Container, options, self.Window) end
 
 return Tab
 end
@@ -3118,6 +3720,7 @@ function Window.new(options)
 
 	self:_buildUI()
 	self:_hookInput()
+	self:_setupOpenButton()
 
 	return self
 end
@@ -3231,6 +3834,17 @@ function Window:_buildUI()
 	self.Shadow.ZIndex = 1
 	self.Shadow.Parent = self.Gui
 	self.Maid:GiveTask(self.Shadow)
+
+	-- Overlay layer (popups / dropdowns / tooltips). Keep outside Main to avoid clipping.
+	self.OverlayLayer = Instance.new("Frame")
+	self.OverlayLayer.Name = "OverlayLayer"
+	self.OverlayLayer.BackgroundTransparency = 1
+	self.OverlayLayer.Size = UDim2.fromScale(1, 1)
+	self.OverlayLayer.Position = UDim2.fromScale(0, 0)
+	self.OverlayLayer.ClipsDescendants = false
+	self.OverlayLayer.ZIndex = 250
+	self.OverlayLayer.Parent = self.Gui
+	self.Maid:GiveTask(self.OverlayLayer)
 
 	-- Main frame
 	self.Main = Creator.New("Frame", {
@@ -3740,6 +4354,282 @@ function Window:_enableResizeGrip()
 		local newH = math.clamp(startSize.Y + delta.Y, min.Y, max.Y)
 		self.Main.Size = UDim2.fromOffset(newW, newH)
 	end))
+end
+
+function Window:BindTooltip(target, text, options)
+	if typeof(target) ~= "Instance" or not target:IsA("GuiObject") then
+		return nil
+	end
+	if type(text) ~= "string" or text == "" then
+		return nil
+	end
+
+	options = options or {}
+	local delaySeconds = tonumber(options.Delay) or 0.35
+	local maxWidth = tonumber(options.MaxWidth) or 320
+
+	local maid = Maid.new()
+	local hovering = false
+	local showThread = nil
+	local tooltip = nil
+	local moveConn = nil
+
+	local function destroyTooltip()
+		if moveConn then
+			moveConn:Disconnect()
+			moveConn = nil
+		end
+		if tooltip then
+			tooltip:Destroy()
+			tooltip = nil
+		end
+	end
+
+	local function updatePos()
+		if not tooltip then
+			return
+		end
+		local layer = self.OverlayLayer or self.Main
+		local layerPos = layer.AbsolutePosition
+		local layerSize = layer.AbsoluteSize
+
+		local mousePos = UserInputService:GetMouseLocation()
+		local rel = (mousePos - layerPos) + Vector2.new(12, 16)
+
+		local tipSize = tooltip.AbsoluteSize
+		local x = math.clamp(rel.X, 8, math.max(8, layerSize.X - tipSize.X - 8))
+		local y = math.clamp(rel.Y, 8, math.max(8, layerSize.Y - tipSize.Y - 8))
+		tooltip.Position = UDim2.fromOffset(x, y)
+	end
+
+	maid:GiveTask(target.MouseEnter:Connect(function()
+		hovering = true
+		if showThread then
+			task.cancel(showThread)
+			showThread = nil
+		end
+		showThread = task.delay(delaySeconds, function()
+			if not hovering then
+				return
+			end
+			if not (self.Gui and self.Gui.Enabled) then
+				return
+			end
+
+			local layer = self.OverlayLayer or self.Main
+			tooltip = Creator.New("Frame", {
+				Parent = layer,
+				Size = UDim2.fromOffset(maxWidth, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundColor3 = "Surface",
+				BackgroundTransparency = 0.06,
+				BorderSizePixel = 0,
+				ZIndex = 340,
+				ThemeTag = { BackgroundColor3 = "Surface" },
+			})
+			Creator.AddCorner(tooltip, 10)
+			Creator.AddStroke(tooltip, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+			Utility.AddGradient(tooltip, "Surface2", "Surface", NumberSequence.new({
+				NumberSequenceKeypoint.new(0, 0.05),
+				NumberSequenceKeypoint.new(1, 0.12),
+			}))
+			Creator.AddPadding(tooltip, 10)
+
+			Creator.New("TextLabel", {
+				Parent = tooltip,
+				Size = UDim2.new(1, 0, 0, 0),
+				AutomaticSize = Enum.AutomaticSize.Y,
+				BackgroundTransparency = 1,
+				Text = text,
+				Font = Enum.Font.Gotham,
+				TextSize = 12,
+				TextColor3 = "SubText",
+				TextTransparency = 0.05,
+				TextWrapped = true,
+				TextXAlignment = Enum.TextXAlignment.Left,
+				ZIndex = 341,
+				ThemeTag = { TextColor3 = "SubText" },
+			})
+
+			updatePos()
+			moveConn = UserInputService.InputChanged:Connect(function(input)
+				if input.UserInputType == Enum.UserInputType.MouseMovement then
+					updatePos()
+				end
+			end)
+		end)
+	end))
+
+	maid:GiveTask(target.MouseLeave:Connect(function()
+		hovering = false
+		if showThread then
+			task.cancel(showThread)
+			showThread = nil
+		end
+		destroyTooltip()
+	end))
+
+	maid:GiveTask(function()
+		hovering = false
+		if showThread then
+			task.cancel(showThread)
+			showThread = nil
+		end
+		destroyTooltip()
+	end)
+
+	return maid
+end
+
+function Window:_setupOpenButton()
+	local cfg = self.Options.OpenButton
+	if cfg == nil or cfg == false then
+		return
+	end
+	if cfg == true then
+		cfg = { Enabled = true }
+	end
+	if type(cfg) ~= "table" then
+		return
+	end
+	if cfg.Enabled == false then
+		return
+	end
+
+	local parent = self.Gui and self.Gui.Parent
+	if not parent then
+		return
+	end
+
+	local openGui = Instance.new("ScreenGui")
+	openGui.Name = "PhantasmOpen_" .. tostring(self.Id)
+	openGui.IgnoreGuiInset = true
+	openGui.ResetOnSpawn = false
+	openGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+	openGui.Parent = parent
+	self.OpenButtonGui = openGui
+	self.Maid:GiveTask(openGui)
+
+	local size = cfg.Size
+	if typeof(size) ~= "UDim2" then
+		size = UDim2.fromOffset(46, 46)
+	end
+
+	local position = cfg.Position
+	if typeof(position) ~= "UDim2" then
+		position = UDim2.new(0, 16, 0.5, 0)
+	end
+
+	local anchor = cfg.AnchorPoint
+	if typeof(anchor) ~= "Vector2" then
+		anchor = Vector2.new(0, 0.5)
+	end
+
+	local btn = Creator.New("TextButton", {
+		Parent = openGui,
+		Size = size,
+		Position = position,
+		AnchorPoint = anchor,
+		BackgroundColor3 = "Surface",
+		BackgroundTransparency = 0.12,
+		Text = "",
+		AutoButtonColor = false,
+		ZIndex = 500,
+		ThemeTag = { BackgroundColor3 = "Surface" },
+	})
+	Creator.AddCorner(btn, 14)
+	local stroke = Creator.AddStroke(btn, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(btn, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
+	Utility.AddGradient(stroke, "Outline", "Outline", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.15),
+		NumberSequenceKeypoint.new(0.5, 0.7),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}), 90)
+
+	local iconName = cfg.Icon or "maximize-2"
+	local img = Creator.New("ImageLabel", {
+		Parent = btn,
+		Size = UDim2.fromOffset(18, 18),
+		Position = UDim2.new(0.5, -9, 0.5, -9),
+		BackgroundTransparency = 1,
+		Image = Utility.GetIcon(iconName),
+		ImageColor3 = "Icon",
+		ZIndex = 501,
+		ThemeTag = { ImageColor3 = "Icon" },
+	})
+
+	btn.Visible = self.Enabled ~= true
+	self.OpenButton = btn
+
+	self.Maid:GiveTask(btn.MouseEnter:Connect(function()
+		Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 0.06,
+		})
+		Utility.Tween(img, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			ImageTransparency = 0,
+		})
+	end))
+
+	self.Maid:GiveTask(btn.MouseLeave:Connect(function()
+		Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 0.12,
+		})
+		Utility.Tween(img, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			ImageTransparency = 0,
+		})
+	end))
+
+	self.Maid:GiveTask(btn.MouseButton1Click:Connect(function()
+		self:Open()
+	end))
+
+	if type(cfg.Tooltip) == "string" and cfg.Tooltip ~= "" then
+		local tip = Creator.New("TextLabel", {
+			Parent = btn,
+			AutomaticSize = Enum.AutomaticSize.XY,
+			AnchorPoint = Vector2.new(0.5, 1),
+			Position = UDim2.new(0.5, 0, 0, -8),
+			BackgroundColor3 = "Surface",
+			BackgroundTransparency = 0.06,
+			BorderSizePixel = 0,
+			Text = cfg.Tooltip,
+			Font = Enum.Font.Gotham,
+			TextSize = 12,
+			TextColor3 = "Text",
+			TextTransparency = 0.05,
+			ZIndex = 520,
+			Visible = false,
+			ThemeTag = { BackgroundColor3 = "Surface", TextColor3 = "Text" },
+		})
+		Creator.AddCorner(tip, 10)
+		Creator.AddStroke(tip, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+		Creator.AddPadding(tip, 8)
+		Utility.AddGradient(tip, "Surface2", "Surface", NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.05),
+			NumberSequenceKeypoint.new(1, 0.12),
+		}))
+
+		self.Maid:GiveTask(btn.MouseEnter:Connect(function()
+			tip.Visible = true
+		end))
+		self.Maid:GiveTask(btn.MouseLeave:Connect(function()
+			tip.Visible = false
+		end))
+	end
+
+	if self.OnOpen then
+		self.Maid:GiveTask(self.OnOpen:Connect(function()
+			btn.Visible = false
+		end))
+	end
+	if self.OnClose then
+		self.Maid:GiveTask(self.OnClose:Connect(function()
+			btn.Visible = true
+		end))
+	end
 end
 
 function Window:_applyTabFilter(text)
@@ -4262,7 +5152,7 @@ function Window:Popup(options)
 	local maid = Maid.new()
 	self.PopupMaid = maid
 
-	local main = self.Main
+	local layer = self.OverlayLayer or self.Main
 	local overlay = Instance.new("TextButton")
 	overlay.Name = "PopupOverlay"
 	overlay.AutoButtonColor = false
@@ -4270,7 +5160,7 @@ function Window:Popup(options)
 	overlay.BackgroundTransparency = 1
 	overlay.Size = UDim2.fromScale(1, 1)
 	overlay.ZIndex = 350
-	overlay.Parent = main
+	overlay.Parent = layer
 	maid:GiveTask(overlay)
 
 	maid:GiveTask(overlay.MouseButton1Click:Connect(function()
@@ -4278,7 +5168,7 @@ function Window:Popup(options)
 	end))
 
 	local frame = Creator.New("Frame", {
-		Parent = main,
+		Parent = layer,
 		Size = UDim2.fromOffset(options.Width or 200, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = "Surface",
@@ -4307,7 +5197,7 @@ function Window:Popup(options)
 			return options.Position
 		end
 		if typeof(options.Position) == "UDim2" then
-			return main.AbsolutePosition + Vector2.new(options.Position.X.Offset, options.Position.Y.Offset)
+			return layer.AbsolutePosition + Vector2.new(options.Position.X.Offset, options.Position.Y.Offset)
 		end
 		local target = options.Target or options.Anchor
 		if typeof(target) == "Instance" and target:IsA("GuiObject") then
@@ -4319,11 +5209,11 @@ function Window:Popup(options)
 
 	local function clampPosition()
 		local pos = anchorPosition()
-		local mainPos = main.AbsolutePosition
-		local rel = pos - mainPos
+		local layerPos = layer.AbsolutePosition
+		local rel = pos - layerPos
 		local size = frame.AbsoluteSize
-		local maxX = main.AbsoluteSize.X - size.X - 8
-		local maxY = main.AbsoluteSize.Y - size.Y - 8
+		local maxX = layer.AbsoluteSize.X - size.X - 8
+		local maxY = layer.AbsoluteSize.Y - size.Y - 8
 		local x = math.clamp(rel.X, 8, math.max(8, maxX))
 		local y = math.clamp(rel.Y, 8, math.max(8, maxY))
 		frame.Position = UDim2.fromOffset(x, y)

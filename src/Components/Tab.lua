@@ -211,5 +211,10 @@ function Tab:AddDropdown(options) return self:_register(require(script.Parent.El
 function Tab:AddKeybind(options) return self:_register(require(script.Parent.Elements.Keybind).new(self.Container, options, self.Window)) end
 function Tab:AddColorPicker(options) return self:_register(require(script.Parent.Elements.ColorPicker).new(self.Container, options, self.Window)) end
 function Tab:AddSection(options) return self:_register(require(script.Parent.Elements.Section).new(self.Container, options, self.Window)) end
+function Tab:AddDivider(options) return self:_register(require(script.Parent.Elements.Divider).new(self.Container, options, self.Window)) end
+function Tab:AddSpacer(options) return self:_register(require(script.Parent.Elements.Spacer).new(self.Container, options, self.Window)) end
+function Tab:AddCode(options) return self:_register(require(script.Parent.Elements.Code).new(self.Container, options, self.Window)) end
+function Tab:AddProgress(options) return self:_register(require(script.Parent.Elements.Progress).new(self.Container, options, self.Window)) end
+function Tab:AddGroup(options) return require(script.Parent.Elements.Group).new(self.Container, options, self.Window) end
 
 return Tab
