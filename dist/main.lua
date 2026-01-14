@@ -160,9 +160,23 @@ modules["Creator"] = function()
     end
     function Creator.AddCorner(inst, r) local c=Instance.new("UICorner", inst); c.CornerRadius=UDim.new(0,r or 6) end
     function Creator.AddStroke(inst, p)
-        local s=Instance.new("UIStroke", inst); s.ApplyStrokeMode=Enum.ApplyStrokeMode.Border
-        for k,v in pairs(p) do if k~="ThemeTag" then s[k]=v end end
-        if p.ThemeTag then for k,v in pairs(p.ThemeTag) do s[k]=ThemeManager:GetColor(v); ThemeManager.ThemeChanged:Connect(function() s[k]=ThemeManager:GetColor(v) end) end end
+        local s = Instance.new("UIStroke", inst); s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        for k, v in pairs(p or {}) do
+            if k ~= "ThemeTag" then
+                if type(v) == "string" and ThemeManager.BuiltInThemes.Dark[v] then
+                    s[k] = ThemeManager:GetColor(v)
+                    ThemeManager.ThemeChanged:Connect(function() s[k] = ThemeManager:GetColor(v) end)
+                else
+                    s[k] = v
+                end
+            end
+        end
+        if p and p.ThemeTag then
+            for prop, token in pairs(p.ThemeTag) do
+                s[prop] = ThemeManager:GetColor(token)
+                ThemeManager.ThemeChanged:Connect(function() s[prop] = ThemeManager:GetColor(token) end)
+            end
+        end
     end
     function Creator.AddPadding(inst, p) local pad=Instance.new("UIPadding", inst); pad.PaddingLeft=UDim.new(0,p); pad.PaddingRight=UDim.new(0,p); pad.PaddingTop=UDim.new(0,p); pad.PaddingBottom=UDim.new(0,p) end
     return Creator
