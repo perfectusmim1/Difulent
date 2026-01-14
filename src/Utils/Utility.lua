@@ -103,7 +103,7 @@ function Utility.AddRipple(button, color)
     color = color or Color3.fromRGB(255, 255, 255)
     button.ClipsDescendants = true
 
-    button.InputBegan:Connect(function(input)
+    local conn = button.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 then
             local x, y = input.Position.X - button.AbsolutePosition.X, input.Position.Y - button.AbsolutePosition.Y
             local size = math.max(button.AbsoluteSize.X, button.AbsoluteSize.Y) * 1.5
@@ -132,6 +132,8 @@ function Utility.AddRipple(button, color)
             end)
         end
     end)
+
+    return conn
 end
 
 function Utility.Join(t1, t2)

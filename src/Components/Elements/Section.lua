@@ -1,76 +1,147 @@
--- Phantasm Section
+-- Phantasm Section (UI-first remake)
 local Creator = require(script.Parent.Parent.Parent.Creator)
 local Utility = require(script.Parent.Parent.Parent.Utils.Utility)
-local ThemeManager = require(script.Parent.Parent.Parent.ThemeManager)
+local Maid = require(script.Parent.Parent.Parent.Utils.Maid)
 
 local Section = {}
 Section.__index = Section
 
-function Section.new(parentContainer, options)
-    local self = setmetatable({}, Section)
-    self.Container = parentContainer
-    self.Title = options.Title or "Section"
-    
-    -- Main Frame
-    self.Frame = Creator.New("Frame", {
-        Parent = parentContainer,
-        Size = UDim2.new(1, 0, 0, 0), -- Auto size handles Y
-        BackgroundColor3 = "Surface",
-        ThemeTag = {BackgroundColor3 = "Surface"},
-        AutomaticSize = Enum.AutomaticSize.Y
-    })
-    Creator.AddCorner(self.Frame, 8)
-    Creator.AddStroke(self.Frame, {Color="Outline", ThemeTag={Color="Outline"}})
-    
-    -- Title
-    self.Label = Creator.New("TextLabel", {
-        Parent = self.Frame,
-        Size = UDim2.new(1, -20, 0, 30),
-        Position = UDim2.fromOffset(10, 0),
-        BackgroundTransparency = 1,
-        Text = self.Title,
-        Font = Enum.Font.GothamBold,
-        TextSize = 14,
-        TextColor3 = "Text",
-        TextXAlignment = Enum.TextXAlignment.Left,
-        ThemeTag = {TextColor3 = "Text"}
-    })
-    
-    -- Content Holder
-    self.Content = Creator.New("Frame", {
-        Parent = self.Frame,
-        Size = UDim2.new(1, -20, 0, 0),
-        Position = UDim2.fromOffset(10, 30),
-        BackgroundTransparency = 1,
-        AutomaticSize = Enum.AutomaticSize.Y
-    })
-    
-    local layout = Instance.new("UIListLayout")
-    layout.Padding = UDim.new(0, 8)
-    layout.SortOrder = Enum.SortOrder.LayoutOrder
-    layout.Parent = self.Content
-    
-    -- Padding check
-    local pad = Instance.new("UIPadding")
-    pad.PaddingBottom = UDim.new(0, 10)
-    pad.Parent = self.Content
+function Section.new(parentContainer, options, window)
+	local self = setmetatable({}, Section)
 
-    return self
+	options = options or {}
+	self.Maid = Maid.new()
+	self.Window = window
+	self.Options = options
+	self.Title = options.Title or "Section"
+	self.Collapsible = options.Collapsible ~= false
+	self.Opened = options.Opened ~= false
+
+	self.Frame = Creator.New("Frame", {
+		Parent = parentContainer,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundColor3 = "Surface",
+		BackgroundTransparency = 0.12,
+		BorderSizePixel = 0,
+		ThemeTag = { BackgroundColor3 = "Surface" },
+	})
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddPadding(self.Frame, 12)
+	self.Maid:GiveTask(self.Frame)
+
+	self.Header = Creator.New("TextButton", {
+		Parent = self.Frame,
+		Size = UDim2.new(1, 0, 0, 30),
+		BackgroundTransparency = 1,
+		Text = "",
+		AutoButtonColor = false,
+	})
+
+	self.Label = Creator.New("TextLabel", {
+		Parent = self.Header,
+		Size = UDim2.new(1, -34, 1, 0),
+		Position = UDim2.fromOffset(0, 0),
+		BackgroundTransparency = 1,
+		Text = self.Title,
+		Font = Enum.Font.GothamBold,
+		TextSize = 13,
+		TextColor3 = "Text",
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ThemeTag = { TextColor3 = "Text" },
+	})
+
+	self.Chevron = Creator.New("ImageLabel", {
+		Parent = self.Header,
+		Size = UDim2.fromOffset(16, 16),
+		Position = UDim2.new(1, -16, 0.5, -8),
+		BackgroundTransparency = 1,
+		Image = Utility.GetIcon("chevron-down"),
+		ImageColor3 = "Icon",
+		Visible = self.Collapsible,
+		ThemeTag = { ImageColor3 = "Icon" },
+	})
+
+	self.Content = Creator.New("Frame", {
+		Parent = self.Frame,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundTransparency = 1,
+		Visible = self.Opened,
+	})
+
+	local layout = Instance.new("UIListLayout")
+	layout.Padding = UDim.new(0, 10)
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Parent = self.Content
+	self.Maid:GiveTask(layout)
+
+	if self.Collapsible then
+		self.Maid:GiveTask(self.Header.MouseButton1Click:Connect(function()
+			self:SetOpened(not self.Opened)
+		end))
+	end
+
+	self:_syncChevron(false)
+	return self
 end
 
--- Function to add elements to the section
--- Note: Elements will parent to self.Content
-
-function Section:AddButton(options)
-    local Button = require(script.Parent.Button)
-    return Button.new(self.Content, options)
+function Section:_syncChevron(animated)
+	if not self.Chevron or not self.Collapsible then
+		return
+	end
+	local rot = self.Opened and 0 or -90
+	if animated then
+		Utility.Tween(self.Chevron, TweenInfo.new(0.16, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Rotation = rot })
+	else
+		self.Chevron.Rotation = rot
+	end
 end
 
-function Section:AddToggle(options)
-    local Toggle = require(script.Parent.Toggle)
-    return Toggle.new(self.Content, options) -- Pass window? Need config context
+function Section:SetTitle(title)
+	self.Title = title
+	self.Label.Text = title
 end
 
--- ... etc
+function Section:SetOpened(opened)
+	if not self.Collapsible then
+		opened = true
+	end
+	self.Opened = opened and true or false
+	self.Content.Visible = self.Opened
+	self:_syncChevron(true)
+end
+
+function Section:Collapse()
+	self:SetOpened(false)
+end
+
+function Section:Expand()
+	self:SetOpened(true)
+end
+
+function Section:Destroy()
+	self.Maid:DoCleaning()
+end
+
+-- Element helpers (same API as Tab)
+function Section:_register(element)
+	if self.Window and type(self.Window._registerElement) == "function" then
+		return self.Window:_registerElement(element)
+	end
+	return element
+end
+
+function Section:AddButton(options) return self:_register(require(script.Parent.Button).new(self.Content, options, self.Window)) end
+function Section:AddToggle(options) return self:_register(require(script.Parent.Toggle).new(self.Content, options, self.Window)) end
+function Section:AddSlider(options) return self:_register(require(script.Parent.Slider).new(self.Content, options, self.Window)) end
+function Section:AddLabel(options) return self:_register(require(script.Parent.Label).new(self.Content, options, self.Window)) end
+function Section:AddParagraph(options) return self:_register(require(script.Parent.Paragraph).new(self.Content, options, self.Window)) end
+function Section:AddInput(options) return self:_register(require(script.Parent.Input).new(self.Content, options, self.Window)) end
+function Section:AddDropdown(options) return self:_register(require(script.Parent.Dropdown).new(self.Content, options, self.Window)) end
+function Section:AddKeybind(options) return self:_register(require(script.Parent.Keybind).new(self.Content, options, self.Window)) end
+function Section:AddColorPicker(options) return self:_register(require(script.Parent.ColorPicker).new(self.Content, options, self.Window)) end
+function Section:AddSection(options) return self:_register(Section.new(self.Content, options, self.Window)) end
 
 return Section

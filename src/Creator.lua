@@ -1,6 +1,5 @@
 -- Phantasm Creator
 local ThemeManager = require(script.Parent.ThemeManager)
-local Utility = require(script.Parent.Utils.Utility)
 
 local Creator = {}
 
@@ -8,16 +7,12 @@ local Creator = {}
 local function ApplyProperties(instance, props)
     for k, v in pairs(props) do
         if k ~= "ThemeTag" and k ~= "Parent" then
-            if type(v) == "string" and ThemeManager.BuiltInThemes.Dark[v] then
-                 -- This is a theme token
-                 instance[k] = ThemeManager:GetColor(v)
-                 -- Bind for updates
-                 ThemeManager.ThemeChanged:Connect(function()
-                     instance[k] = ThemeManager:GetColor(v)
-                 end)
-            else
-                instance[k] = v
-            end
+			if ThemeManager:IsToken(v) then
+				instance[k] = ThemeManager:GetColor(v)
+				ThemeManager:Bind(instance, { [k] = v })
+			else
+				instance[k] = v
+			end
         end
     end
     -- Handle Parent last for performance
@@ -31,12 +26,7 @@ function Creator.New(className, props)
     ApplyProperties(instance, props or {})
     
     if props and props.ThemeTag then
-        for prop, token in pairs(props.ThemeTag) do
-            instance[prop] = ThemeManager:GetColor(token)
-            ThemeManager.ThemeChanged:Connect(function()
-                instance[prop] = ThemeManager:GetColor(token)
-            end)
-        end
+		ThemeManager:Bind(instance, props.ThemeTag)
     end
     
     return instance
@@ -56,12 +46,7 @@ function Creator.AddStroke(instance, props)
     ApplyProperties(stroke, props or {})
     
     if props.ThemeTag then
-         for prop, token in pairs(props.ThemeTag) do
-            stroke[prop] = ThemeManager:GetColor(token)
-            ThemeManager.ThemeChanged:Connect(function()
-                stroke[prop] = ThemeManager:GetColor(token)
-            end)
-        end
+		ThemeManager:Bind(stroke, props.ThemeTag)
     end
     return stroke
 end

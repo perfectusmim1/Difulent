@@ -53,4 +53,10 @@ function Paragraph:Set(options)
     if options.Content then self.ContentLabel.Text = options.Content end
 end
 
+function Paragraph:Destroy()
+	if self.Frame then
+		self.Frame:Destroy()
+	end
+end
+
 return Paragraph

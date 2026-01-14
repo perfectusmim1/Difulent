@@ -26,4 +26,10 @@ function Label:SetTitle(t)
     self.Frame.Text = t
 end
 
+function Label:Destroy()
+	if self.Frame then
+		self.Frame:Destroy()
+	end
+end
+
 return Label

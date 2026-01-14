@@ -3,22 +3,70 @@ local Window = require(script.Components.Window)
 local ThemeManager = require(script.ThemeManager)
 
 local Library = {}
-Library.Version = "1.0.0"
+Library.Version = "1.2.0"
+Library._windows = {}
+Library._lastWindow = nil
 
 function Library.CreateWindow(options)
-    return Window.new(options)
+    local win = Window.new(options)
+    table.insert(Library._windows, win)
+    Library._lastWindow = win
+
+    if win.OnDestroy then
+        win.OnDestroy:Connect(function()
+            for i, w in ipairs(Library._windows) do
+                if w == win then
+                    table.remove(Library._windows, i)
+                    break
+                end
+            end
+            if Library._lastWindow == win then
+                Library._lastWindow = Library._windows[#Library._windows]
+            end
+        end)
+    end
+
+    return win
 end
 
 function Library:SetTheme(theme)
     ThemeManager:SetTheme(theme)
 end
 
+function Library:AddTheme(themeTable)
+    return ThemeManager:AddTheme(themeTable)
+end
+
+function Library:GetThemes()
+    return ThemeManager:GetThemes()
+end
+
+function Library:GetTheme()
+    return ThemeManager:GetTheme()
+end
+
+function Library:GetThemeName()
+    return ThemeManager:GetThemeName()
+end
+
 function Library:Notify(options)
-    -- Notify logic usually tied to a window or global overlay.
-    -- If we have multiple windows, we should pick the most recently active one or create a global screenGui.
-    -- Since our Window creates its own ScreenGui, we need to pick one.
-    -- For simplicity, Phantasm works best with 1 Main Window.
-    warn("Notify should be called on the Window instance for now.")
+    local target = Library._lastWindow
+    if target and target.Notify then
+        target:Notify(options)
+        return true
+    end
+    warn("Phantasm: No window available for notifications.")
+    return false
+end
+
+function Library:Destroy()
+    for _, win in ipairs(Library._windows) do
+        pcall(function()
+            win:Destroy()
+        end)
+    end
+    Library._windows = {}
+    Library._lastWindow = nil
 end
 
 -- Expose classes for direct usage if needed
