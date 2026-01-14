@@ -1,6 +1,6 @@
 -- Phantasm UI Library [Bundled]
 -- https://github.com/perfectusmim1/Difulent
--- Generated Bundle
+-- Generated Bundle (Premium Revision)
 
 local modules = {}
 
@@ -89,7 +89,7 @@ modules["Utility"] = function()
         local function update(input)
             local delta = input.Position - dragStart
             local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            TweenService:Create(frame, TweenInfo.new(0.1), {Position = newPos}):Play()
+            TweenService:Create(frame, TweenInfo.new(0.05), {Position = newPos}):Play()
         end
         dragHandle.InputBegan:Connect(function(input)
             if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -122,9 +122,9 @@ modules["ThemeManager"] = function()
     local TM = {}
     TM.ThemeChanged = Signal.new()
     TM.BuiltInThemes = {
-        Dark = { Accent=Color3.fromRGB(0,120,212), Background=Color3.fromRGB(32,32,32), Surface=Color3.fromRGB(45,45,45), Surface2=Color3.fromRGB(60,60,60), Outline=Color3.fromRGB(80,80,80), Text=Color3.fromRGB(255,255,255), SubText=Color3.fromRGB(180,180,180), Placeholder = Color3.fromRGB(120, 120, 120) },
-        Midnight = { Accent=Color3.fromRGB(114,137,218), Background=Color3.fromRGB(15,15,20), Surface=Color3.fromRGB(25,25,35), Surface2=Color3.fromRGB(35,35,45), Outline=Color3.fromRGB(45,45,60), Text=Color3.fromRGB(240,240,255), SubText=Color3.fromRGB(160,160,180), Placeholder = Color3.fromRGB(100, 100, 120) },
-        Ocean = { Accent=Color3.fromRGB(0,150,200), Background=Color3.fromRGB(10,25,35), Surface=Color3.fromRGB(18,40,55), Surface2=Color3.fromRGB(25,55,75), Outline=Color3.fromRGB(35,70,90), Text=Color3.fromRGB(220,240,255), SubText=Color3.fromRGB(140,180,200), Placeholder = Color3.fromRGB(100, 130, 150) }
+        Dark = { Accent=Color3.fromRGB(0, 110, 255), Background=Color3.fromRGB(24, 24, 24), Surface=Color3.fromRGB(32, 32, 32), Surface2=Color3.fromRGB(45, 45, 45), Outline=Color3.fromRGB(60, 60, 60), Text=Color3.fromRGB(255, 255, 255), SubText=Color3.fromRGB(150, 150, 150), Placeholder=Color3.fromRGB(120, 120, 120) },
+        Midnight = { Accent=Color3.fromRGB(120, 140, 255), Background=Color3.fromRGB(15, 15, 25), Surface=Color3.fromRGB(25, 25, 40), Surface2=Color3.fromRGB(35, 35, 55), Outline=Color3.fromRGB(50, 50, 80), Text=Color3.fromRGB(240, 240, 255), SubText=Color3.fromRGB(160, 160, 200), Placeholder=Color3.fromRGB(120, 120, 160) },
+        Ocean = { Accent=Color3.fromRGB(0, 180, 255), Background=Color3.fromRGB(10, 20, 30), Surface=Color3.fromRGB(20, 35, 50), Surface2=Color3.fromRGB(30, 55, 75), Outline=Color3.fromRGB(40, 70, 100), Text=Color3.fromRGB(230, 250, 255), SubText=Color3.fromRGB(150, 200, 220), Placeholder=Color3.fromRGB(130, 160, 180) }
     }
     TM.CurrentTheme = TM.BuiltInThemes.Dark
     function TM:SetTheme(name)
@@ -180,11 +180,21 @@ modules["Elements"] = function()
     Elements.Button.__index = Elements.Button
     function Elements.Button.new(container, options)
         local self = setmetatable({}, Elements.Button)
-        self.Frame = Creator.New("TextButton", {Parent=container, Size=UDim2.new(1,0,0,32), BackgroundColor3="Surface2", Text="", AutoButtonColor=false, ThemeTag={BackgroundColor3="Surface2"}})
+        self.Frame = Creator.New("TextButton", {Parent=container, Size=UDim2.new(1,0,0,32), BackgroundColor3="Surface", Text="", AutoButtonColor=false, ThemeTag={BackgroundColor3="Surface"}})
         Creator.AddCorner(self.Frame, 6)
-        Creator.New("TextLabel", {Parent=self.Frame, Size=UDim2.new(1,-20,1,0), Position=UDim2.new(0,10,0,0), BackgroundTransparency=1, Text=options.Title or "Button", Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        Creator.AddStroke(self.Frame, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
+        Creator.New("TextLabel", {Parent=self.Frame, Size=UDim2.new(1,-30,1,0), Position=UDim2.new(0,10,0,0), BackgroundTransparency=1, Text=options.Title or "Button", Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
         Creator.New("ImageLabel", {Parent=self.Frame, Size=UDim2.fromOffset(16,16), Position=UDim2.new(1,-26,0.5,-8), BackgroundTransparency=1, Image=Utility.GetIcon("chevron-right"), ImageColor3="SubText", ThemeTag={ImageColor3="SubText"}})
-        self.Frame.MouseButton1Click:Connect(function() Utility.AddRipple(self.Frame); if options.Callback then options.Callback() end end)
+        self.Frame.MouseEnter:Connect(function() 
+            Utility.Tween(self.Frame, TweenInfo.new(0.2), {BackgroundColor3=ThemeManager:GetColor("Surface2")}) 
+        end)
+        self.Frame.MouseLeave:Connect(function() 
+            Utility.Tween(self.Frame, TweenInfo.new(0.2), {BackgroundColor3=ThemeManager:GetColor("Surface")}) 
+        end)
+        self.Frame.MouseButton1Click:Connect(function() 
+            Utility.AddRipple(self.Frame)
+            if options.Callback then options.Callback() end 
+        end)
         return self
     end
 
@@ -195,10 +205,12 @@ modules["Elements"] = function()
         local self = setmetatable({Value=options.Default or false}, Elements.Toggle)
         self.Window = window; self.Flag = options.Flag; self.Callback = options.Callback or function() end
         if self.Flag and window then window.Flags[self.Flag] = self.Value end
-        self.Frame = Creator.New("TextButton", {Parent=container, Size=UDim2.new(1,0,0,32), BackgroundTransparency=1, Text="", AutoButtonColor=false})
-        Creator.New("TextLabel", {Parent=self.Frame, Size=UDim2.new(1,-60,1,0), Position=UDim2.new(0,0,0,0), BackgroundTransparency=1, Text=options.Title or "Toggle", Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
-        self.Switch = Creator.New("Frame", {Parent=self.Frame, Size=UDim2.fromOffset(40,20), Position=UDim2.new(1,-40,0.5,-10), BackgroundColor3="Surface2", ThemeTag={BackgroundColor3="Surface2"}}); Creator.AddCorner(self.Switch, 10)
-        self.Knob = Creator.New("Frame", {Parent=self.Switch, Size=UDim2.fromOffset(16,16), Position=UDim2.new(0,2,0,2), BackgroundColor3="SubText", ThemeTag={BackgroundColor3="SubText"}}); Creator.AddCorner(self.Knob, 8)
+        self.Frame = Creator.New("TextButton", {Parent=container, Size=UDim2.new(1,0,0,32), BackgroundColor3="Surface", Text="", AutoButtonColor=false, ThemeTag={BackgroundColor3="Surface"}})
+        Creator.AddCorner(self.Frame, 6)
+        Creator.AddStroke(self.Frame, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
+        Creator.New("TextLabel", {Parent=self.Frame, Size=UDim2.new(1,-60,1,0), Position=UDim2.new(0,10,0,0), BackgroundTransparency=1, Text=options.Title or "Toggle", Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        self.Switch = Creator.New("Frame", {Parent=self.Frame, Size=UDim2.fromOffset(40,20), Position=UDim2.new(1,-50,0.5,-10), BackgroundColor3="Surface2", ThemeTag={BackgroundColor3="Surface2"}}); Creator.AddCorner(self.Switch, 20)
+        self.Knob = Creator.New("Frame", {Parent=self.Switch, Size=UDim2.fromOffset(16,16), Position=UDim2.new(0,2,0,2), BackgroundColor3="Text", ThemeTag={BackgroundColor3="Text"}}); Creator.AddCorner(self.Knob, 100)
         self.Frame.MouseButton1Click:Connect(function() self:Set(not self.Value) end)
         self:Set(self.Value)
         return self
@@ -208,7 +220,7 @@ modules["Elements"] = function()
         if self.Flag and self.Window then self.Window.Flags[self.Flag] = self.Value end
         local pos = self.Value and UDim2.new(0,22,0,2) or UDim2.new(0,2,0,2)
         local color = self.Value and ThemeManager:GetColor("Accent") or ThemeManager:GetColor("Surface2")
-        Utility.Tween(self.Knob, TweenInfo.new(0.2), {Position=pos, BackgroundColor3=ThemeManager:GetColor("Text")})
+        Utility.Tween(self.Knob, TweenInfo.new(0.2), {Position=pos})
         Utility.Tween(self.Switch, TweenInfo.new(0.2), {BackgroundColor3=color})
         self.Callback(val)
     end
@@ -218,20 +230,36 @@ modules["Elements"] = function()
     Elements.Slider.__index = Elements.Slider
     function Elements.Slider.new(container, options, window)
         local self = setmetatable({Min=options.Min or 0, Max=options.Max or 100, Step=options.Step or 1, Value=options.Default or 0}, Elements.Slider)
-        self.Container = Creator.New("Frame", {Parent=container, Size=UDim2.new(1,0,0,50), BackgroundTransparency=1})
-        Creator.New("TextLabel", {Parent=self.Container, Size=UDim2.new(1,0,0,20), Text=options.Title or "Slider", TextSize=13, Font=Enum.Font.GothamMedium, BackgroundTransparency=1, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
-        local btn = Creator.New("TextButton", {Parent=self.Container, Size=UDim2.new(1,0,0,6), Position=UDim2.new(0,0,1,-10), BackgroundColor3="Surface2", Text="", ThemeTag={BackgroundColor3="Surface2"}}); Creator.AddCorner(btn, 4)
-        local fill = Creator.New("Frame", {Parent=btn, Size=UDim2.new(0,0,1,0), BackgroundColor3="Accent", ThemeTag={BackgroundColor3="Accent"}}); Creator.AddCorner(fill, 4)
+        self.Container = Creator.New("Frame", {Parent=container, Size=UDim2.new(1,0,0,50), BackgroundColor3="Surface", ThemeTag={BackgroundColor3="Surface"}})
+        Creator.AddCorner(self.Container, 6); Creator.AddStroke(self.Container, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
+        
+        Creator.New("TextLabel", {Parent=self.Container, Size=UDim2.new(1,-20,0,20), Position=UDim2.new(0,10,0,8), Text=options.Title or "Slider", TextSize=13, Font=Enum.Font.GothamMedium, BackgroundTransparency=1, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        local valLabel = Creator.New("TextLabel", {Parent=self.Container, Size=UDim2.new(0,40,0,20), Position=UDim2.new(1,-50,0,8), Text=tostring(self.Value), TextSize=13, Font=Enum.Font.Gotham, BackgroundTransparency=1, TextColor3="SubText", TextXAlignment=Enum.TextXAlignment.Right, ThemeTag={TextColor3="SubText"}})
+        
+        local btn = Creator.New("TextButton", {Parent=self.Container, Size=UDim2.new(1,-20,0,6), Position=UDim2.new(0,10,0,35), BackgroundColor3="Surface2", Text="", ThemeTag={BackgroundColor3="Surface2"}, AutoButtonColor=false}); Creator.AddCorner(btn, 100)
+        local fill = Creator.New("Frame", {Parent=btn, Size=UDim2.new(0,0,1,0), BackgroundColor3="Accent", ThemeTag={BackgroundColor3="Accent"}}); Creator.AddCorner(fill, 100)
+        local knob = Creator.New("Frame", {Parent=fill, Size=UDim2.new(0,14,0,14), Position=UDim2.new(1,-7,0.5,-7), BackgroundColor3="Text", ThemeTag={BackgroundColor3="Text"}}); Creator.AddCorner(knob, 100)
+        
         local dragging = false
         local function Update(input)
-            local pct = math.clamp((input.Position.X - btn.AbsolutePosition.X) / btn.AbsoluteSize.X, 0, 1)
+            local mouseX = input.Position.X
+            local btnAbs = btn.AbsolutePosition.X
+            local btnSize = btn.AbsoluteSize.X
+            local pct = math.clamp((mouseX - btnAbs) / btnSize, 0, 1)
             local val = math.floor((self.Min + (self.Max-self.Min)*pct)/self.Step + 0.5)*self.Step
+            self.Value = val
             fill.Size = UDim2.new(pct, 0, 1, 0)
+            valLabel.Text = tostring(val)
             if options.Callback then options.Callback(val) end
         end
-        btn.MouseButton1Down:Connect(function() dragging=true; Update(game:GetService("UserInputService"):GetMouse()) end)
+        btn.MouseButton1Down:Connect(function() dragging=true; Update(game:GetService("Players").LocalPlayer:GetMouse()) end)
         game:GetService("UserInputService").InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then dragging=false end end)
         game:GetService("UserInputService").InputChanged:Connect(function(i) if dragging and i.UserInputType==Enum.UserInputType.MouseMovement then Update(i) end end)
+        
+        -- Init
+        local pct = (self.Value - self.Min) / (self.Max - self.Min)
+        fill.Size = UDim2.new(pct, 0, 1, 0)
+        
         return self
     end
 
@@ -249,9 +277,9 @@ modules["Elements"] = function()
     Elements.Paragraph.__index = Elements.Paragraph
     function Elements.Paragraph.new(container, options)
         local self = setmetatable({}, Elements.Paragraph)
-        local f = Creator.New("Frame", {Parent=container, Size=UDim2.new(1,0,0,0), BackgroundTransparency=1, AutomaticSize=Enum.AutomaticSize.Y})
-        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,0,0,20), BackgroundTransparency=1, Text=options.Title or "Paragraph", Font=Enum.Font.GothamMedium, TextSize=14, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
-        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,0,0,0), Position=UDim2.fromOffset(0,25), BackgroundTransparency=1, Text=options.Content or "", Font=Enum.Font.Gotham, TextSize=13, TextColor3="SubText", TextXAlignment=Enum.TextXAlignment.Left, TextWrapped=true, AutomaticSize=Enum.AutomaticSize.Y, ThemeTag={TextColor3="SubText"}})
+        local f = Creator.New("Frame", {Parent=container, Size=UDim2.new(1,0,0,0), BackgroundColor3="Surface", AutomaticSize=Enum.AutomaticSize.Y, ThemeTag={BackgroundColor3="Surface"}}); Creator.AddCorner(f,6); Creator.AddStroke(f, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
+        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-20,0,20), Position=UDim2.fromOffset(10,5), BackgroundTransparency=1, Text=options.Title or "Paragraph", Font=Enum.Font.GothamMedium, TextSize=14, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-20,0,0), Position=UDim2.fromOffset(10,25), BackgroundTransparency=1, Text=options.Content or "", Font=Enum.Font.Gotham, TextSize=13, TextColor3="SubText", TextXAlignment=Enum.TextXAlignment.Left, TextWrapped=true, AutomaticSize=Enum.AutomaticSize.Y, ThemeTag={TextColor3="SubText"}})
         Creator.AddPadding(f, 10)
         return self
     end
@@ -262,10 +290,10 @@ modules["Elements"] = function()
     function Elements.Input.new(container, options, window)
         local self = setmetatable({Value=options.Default or ""}, Elements.Input)
         if options.Flag and window then window.Flags[options.Flag] = self.Value end
-        local f = Creator.New("Frame", {Parent=container, Size=UDim2.new(1,0,0,50), BackgroundTransparency=1})
-        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,0,0,20), BackgroundTransparency=1, Text=options.Title or "Input", Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
-        local b = Creator.New("Frame", {Parent=f, Size=UDim2.new(1,0,0,30), Position=UDim2.new(0,0,0,20), BackgroundColor3="Surface2", ThemeTag={BackgroundColor3="Surface2"}}); Creator.AddCorner(b, 6)
-        local box = Creator.New("TextBox", {Parent=b, Size=UDim2.new(1,-20,1,0), Position=UDim2.new(0,10,0,0), BackgroundTransparency=1, Text=self.Value, PlaceholderText=options.Placeholder or "Enter...", Font=Enum.Font.Gotham, TextSize=13, TextColor3="Text", PlaceholderColor3="SubText", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text", PlaceholderColor3="SubText"}})
+        local f = Creator.New("Frame", {Parent=container, Size=UDim2.new(1,0,0,50), BackgroundColor3="Surface", ThemeTag={BackgroundColor3="Surface"}}); Creator.AddCorner(f,6); Creator.AddStroke(f, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
+        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-20,0,20), Position=UDim2.fromOffset(10,5), BackgroundTransparency=1, Text=options.Title or "Input", Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        local b = Creator.New("Frame", {Parent=f, Size=UDim2.new(1,-20,0,30), Position=UDim2.new(0,10,0,25), BackgroundColor3="Surface2", ThemeTag={BackgroundColor3="Surface2"}}); Creator.AddCorner(b, 6)
+        local box = Creator.New("TextBox", {Parent=b, Size=UDim2.new(1,-10,1,0), Position=UDim2.new(0,5,0,0), BackgroundTransparency=1, Text=self.Value, PlaceholderText=options.Placeholder or "Enter...", Font=Enum.Font.Gotham, TextSize=13, TextColor3="Text", PlaceholderColor3="SubText", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text", PlaceholderColor3="SubText"}})
         box.FocusLost:Connect(function() 
             if options.Callback then options.Callback(box.Text) end 
             if options.Flag and window then window.Flags[options.Flag] = box.Text end
@@ -281,20 +309,21 @@ modules["Elements"] = function()
         if not self.Value and #options.Values>0 then self.Value = options.Values[1] end
         if options.Flag and window then window.Flags[options.Flag] = self.Value end
         
-        local f = Creator.New("TextButton", {Parent=container, Size=UDim2.new(1,0,0,60), BackgroundTransparency=1, Text="", AutoButtonColor=false})
-        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,0,0,20), BackgroundTransparency=1, Text=options.Title or "Dropdown", Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
-        local disp = Creator.New("TextButton", {Parent=f, Size=UDim2.new(1,0,0,32), Position=UDim2.new(0,0,0,22), BackgroundColor3="Surface2", ThemeTag={BackgroundColor3="Surface2"}, Text="", AutoButtonColor=false}); Creator.AddCorner(disp, 6)
+        local f = Creator.New("TextButton", {Parent=container, Size=UDim2.new(1,0,0,60), BackgroundColor3="Surface", Text="", AutoButtonColor=false, ThemeTag={BackgroundColor3="Surface"}}); Creator.AddCorner(f,6); Creator.AddStroke(f, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
+        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-20,0,20), Position=UDim2.fromOffset(10,5), BackgroundTransparency=1, Text=options.Title or "Dropdown", Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        
+        local disp = Creator.New("TextButton", {Parent=f, Size=UDim2.new(1,-20,0,30), Position=UDim2.new(0,10,0,25), BackgroundColor3="Surface2", ThemeTag={BackgroundColor3="Surface2"}, Text="", AutoButtonColor=false}); Creator.AddCorner(disp, 6)
         local lbl = Creator.New("TextLabel", {Parent=disp, Size=UDim2.new(1,-30,1,0), Position=UDim2.fromOffset(10,0), BackgroundTransparency=1, Text=tostring(self.Value), Font=Enum.Font.Gotham, TextSize=13, TextColor3="SubText", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="SubText"}})
         Creator.New("ImageLabel", {Parent=disp, Size=UDim2.fromOffset(16,16), Position=UDim2.new(1,-26,0.5,-8), BackgroundTransparency=1, Image=Utility.GetIcon("chevron-down"), ImageColor3="SubText", ThemeTag={ImageColor3="SubText"}})
         
         local open = false
         local listFrame
         
-        disp.MouseButton1Click:Connect(function()
+        f.MouseButton1Click:Connect(function()
             open = not open
             if open then
-                listFrame = Creator.New("Frame", {Parent=window.Gui, Size=UDim2.new(0, f.AbsoluteSize.X, 0, math.min(#options.Values*25, 200)), Position=UDim2.fromOffset(disp.AbsolutePosition.X, disp.AbsolutePosition.Y+35), BackgroundColor3="Surface2", ZIndex=200, ClibDescendants=true}); Creator.AddCorner(listFrame, 6)
-                local sc = Creator.New("ScrollingFrame", {Parent=listFrame, Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, CanvasSize=UDim2.new(0,0,0,#options.Values*25)}); Instance.new("UIListLayout", sc)
+                listFrame = Creator.New("Frame", {Parent=window.Gui, Size=UDim2.new(0, f.AbsoluteSize.X, 0, math.min(#options.Values*25, 200)), Position=UDim2.fromOffset(f.AbsolutePosition.X, f.AbsolutePosition.Y+f.AbsoluteSize.Y+5), BackgroundColor3="Surface", ZIndex=200, ClipsDescendants=true, ThemeTag={BackgroundColor3="Surface"}}); Creator.AddCorner(listFrame, 6); Creator.AddStroke(listFrame, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
+                local sc = Creator.New("ScrollingFrame", {Parent=listFrame, Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, CanvasSize=UDim2.new(0,0,0,#options.Values*25), ScrollBarThickness=2}); Instance.new("UIListLayout", sc)
                 for _, v in ipairs(options.Values) do
                     local b = Creator.New("TextButton", {Parent=sc, Size=UDim2.new(1,0,0,25), BackgroundTransparency=1, Text="   "..v, TextXAlignment=Enum.TextXAlignment.Left, TextColor3="SubText", Font=Enum.Font.Gotham, TextSize=13, ThemeTag={TextColor3="SubText"}})
                     b.MouseButton1Click:Connect(function()
@@ -302,6 +331,8 @@ modules["Elements"] = function()
                         if options.Callback then options.Callback(v) end
                         if options.Flag and window then window.Flags[options.Flag] = v end
                     end)
+                    b.MouseEnter:Connect(function() b.TextColor3=ThemeManager:GetColor("Text") end)
+                    b.MouseLeave:Connect(function() b.TextColor3=ThemeManager:GetColor("SubText") end)
                 end
             elseif listFrame then listFrame:Destroy() end
         end)
@@ -314,9 +345,9 @@ modules["Elements"] = function()
     function Elements.Keybind.new(container, options, window)
         local self = setmetatable({Value=options.Default}, Elements.Keybind)
         if options.Flag and window then window.Flags[options.Flag] = self.Value end
-        local f = Creator.New("Frame", {Parent=container, Size=UDim2.new(1,0,0,32), BackgroundTransparency=1})
-        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-80,1,0), BackgroundTransparency=1, Text=options.Title, Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
-        local b = Creator.New("TextButton", {Parent=f, Size=UDim2.new(0,80,0,24), Position=UDim2.new(1,-80,0,4), BackgroundColor3="Surface2", ThemeTag={BackgroundColor3="Surface2"}, Text="", AutoButtonColor=false}); Creator.AddCorner(b, 4)
+        local f = Creator.New("Frame", {Parent=container, Size=UDim2.new(1,0,0,32), BackgroundColor3="Surface", ThemeTag={BackgroundColor3="Surface"}}); Creator.AddCorner(f,6); Creator.AddStroke(f, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
+        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-80,1,0), Position=UDim2.fromOffset(10,0), BackgroundTransparency=1, Text=options.Title, Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        local b = Creator.New("TextButton", {Parent=f, Size=UDim2.new(0,80,0,24), Position=UDim2.new(1,-85,0,4), BackgroundColor3="Surface2", ThemeTag={BackgroundColor3="Surface2"}, Text="", AutoButtonColor=false}); Creator.AddCorner(b, 4)
         local lbl = Creator.New("TextLabel", {Parent=b, Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, Text=self.Value and self.Value.Name or "None", Font=Enum.Font.Gotham, TextSize=12, TextColor3="SubText", ThemeTag={TextColor3="SubText"}})
         b.MouseButton1Click:Connect(function()
             lbl.Text = "..."
@@ -336,12 +367,11 @@ modules["Elements"] = function()
     Elements.ColorPicker.__index = Elements.ColorPicker
     function Elements.ColorPicker.new(container, options, window)
         local self = setmetatable({Value=options.Default or Color3.new(1,1,1)}, Elements.ColorPicker)
-        local f = Creator.New("TextButton", {Parent=container, Size=UDim2.new(1,0,0,40), BackgroundTransparency=1, Text="", AutoButtonColor=false})
-        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-60,1,0), BackgroundTransparency=1, Text=options.Title, Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
-        local ind = Creator.New("Frame", {Parent=f, Size=UDim2.fromOffset(40,20), Position=UDim2.new(1,-40,0.5,-10), BackgroundColor3=self.Value}); Creator.AddCorner(ind, 4)
+        local f = Creator.New("TextButton", {Parent=container, Size=UDim2.new(1,0,0,40), BackgroundColor3="Surface", Text="", AutoButtonColor=false, ThemeTag={BackgroundColor3="Surface"}}); Creator.AddCorner(f,6); Creator.AddStroke(f, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
+        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-60,1,0), Position=UDim2.fromOffset(10,0), BackgroundTransparency=1, Text=options.Title, Font=Enum.Font.GothamMedium, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        local ind = Creator.New("Frame", {Parent=f, Size=UDim2.fromOffset(40,20), Position=UDim2.new(1,-50,0.5,-10), BackgroundColor3=self.Value}); Creator.AddCorner(ind, 4); Creator.AddStroke(ind, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
         f.MouseButton1Click:Connect(function() 
-            -- Simplified color picker for bundled dist - usually complex
-            -- Just randomizing for demo if clicked or would need full RGB sliders
+            -- Placeholder
             if options.Callback then options.Callback(self.Value) end
         end)
         return self
@@ -352,17 +382,17 @@ modules["Elements"] = function()
     Elements.Section.__index = Elements.Section
     function Elements.Section.new(container, options)
         local self = setmetatable({}, Elements.Section)
-        local f = Creator.New("Frame", {Parent=container, Size=UDim2.new(1,0,0,0), BackgroundColor3="Surface", AutomaticSize=Enum.AutomaticSize.Y, ThemeTag={BackgroundColor3="Surface"}}); Creator.AddCorner(f, 6)
-        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-10,0,25), Position=UDim2.fromOffset(10,0), BackgroundTransparency=1, Text=options.Title, Font=Enum.Font.GothamBold, TextSize=13, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
-        self.Content = Creator.New("Frame", {Parent=f, Size=UDim2.new(1,-20,0,0), Position=UDim2.fromOffset(10,25), BackgroundTransparency=1, AutomaticSize=Enum.AutomaticSize.Y})
+        local f = Creator.New("Frame", {Parent=container, Size=UDim2.new(1,0,0,0), BackgroundTransparency=1, AutomaticSize=Enum.AutomaticSize.Y})
+        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-10,0,25), Position=UDim2.fromOffset(5,0), BackgroundTransparency=1, Text=options.Title, Font=Enum.Font.GothamBold, TextSize=12, TextColor3="SubText", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="SubText"}})
+        self.Content = Creator.New("Frame", {Parent=f, Size=UDim2.new(1,0,0,0), Position=UDim2.fromOffset(0,25), BackgroundTransparency=1, AutomaticSize=Enum.AutomaticSize.Y})
         Instance.new("UIListLayout", self.Content).Padding = UDim.new(0,8)
-        Creator.AddPadding(self.Content, 4)
         return self
     end
-    -- Proxy methods for Section to act like a container
     function Elements.Section:AddButton(o) return Elements.Button.new(self.Content, o) end
     function Elements.Section:AddToggle(o) return Elements.Toggle.new(self.Content, o) end 
-    -- ... etc, simplified for now
+    function Elements.Section:AddSlider(o) return Elements.Slider.new(self.Content, o) end
+    function Elements.Section:AddInput(o) return Elements.Input.new(self.Content, o) end
+    function Elements.Section:AddDropdown(o) return Elements.Dropdown.new(self.Content, o) end
     
     return Elements
 end
@@ -395,23 +425,39 @@ modules["Tab"] = function()
     function Tab.new(window, options)
         local self = setmetatable({Window=window, Title=options.Title}, Tab)
         self.Button = Creator.New("TextButton", {Parent=window.SidebarList, Size=UDim2.new(1,0,0,32), BackgroundTransparency=1, Text=""})
-        Creator.New("TextLabel", {Parent=self.Button, Size=UDim2.new(1,-10,1,0), Position=UDim2.new(0,10,0,0), Text=self.Title, BackgroundTransparency=1, TextColor3="SubText", Font=Enum.Font.GothamMedium, TextSize=14, TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="SubText"}})
+        Creator.AddCorner(self.Button, 6)
+        
+        local icon = options.Icon and Utility.GetIcon(options.Icon)
+        local iconImg
+        if icon then
+            iconImg = Creator.New("ImageLabel", {Parent=self.Button, Size=UDim2.fromOffset(20,20), Position=UDim2.fromOffset(10,6), BackgroundTransparency=1, Image=icon, ImageColor3="SubText", ThemeTag={ImageColor3="SubText"}})
+        end
+        
+        Creator.New("TextLabel", {Parent=self.Button, Size=UDim2.new(1,-40,1,0), Position=UDim2.fromOffset(icon and 40 or 15,0), Text=self.Title, BackgroundTransparency=1, TextColor3="SubText", Font=Enum.Font.GothamMedium, TextSize=14, TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="SubText"}})
+        
         self.Container = Creator.New("ScrollingFrame", {Parent=window.Content, Size=UDim2.new(1,0,1,0), BackgroundTransparency=1, Visible=false, CanvasSize=UDim2.new(0,0,0,0), ScrollBarThickness=2})
         Creator.AddPadding(self.Container, 15)
-        local list = Instance.new("UIListLayout", self.Container); list.Padding=UDim.new(0,10); list.SortOrder=Enum.SortOrder.LayoutOrder
+        local list = Instance.new("UIListLayout", self.Container); list.Padding=UDim.new(0,8); list.SortOrder=Enum.SortOrder.LayoutOrder
         list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function() self.Container.CanvasSize = UDim2.new(0,0,0,list.AbsoluteContentSize.Y+30) end)
+        
         self.Button.MouseButton1Click:Connect(function() self:Select() end)
+        
+        self.Label = self.Button.TextLabel
+        self.IconImg = iconImg
+        
         return self
     end
     function Tab:Select()
         for _, t in ipairs(self.Window.Tabs) do 
             t.Container.Visible=false 
-            t.Button.BackgroundTransparency=1
-            -- Simplified theme update logic for dist
+            Utility.Tween(t.Label, TweenInfo.new(0.2), {TextColor3=ThemeManager:GetColor("SubText")})
+            if t.IconImg then Utility.Tween(t.IconImg, TweenInfo.new(0.2), {ImageColor3=ThemeManager:GetColor("SubText")}) end
+            Utility.Tween(t.Button, TweenInfo.new(0.2), {BackgroundTransparency=1})
         end
         self.Container.Visible = true
-        self.Button.BackgroundTransparency=0
-        self.Button.BackgroundColor3=ThemeManager:GetColor("Surface2")
+        Utility.Tween(self.Label, TweenInfo.new(0.2), {TextColor3=ThemeManager:GetColor("Text")})
+        if self.IconImg then Utility.Tween(self.IconImg, TweenInfo.new(0.2), {ImageColor3=ThemeManager:GetColor("Text")}) end
+        Utility.Tween(self.Button, TweenInfo.new(0.2), {BackgroundTransparency=0, BackgroundColor3=ThemeManager:GetColor("Surface2")})
     end
     function Tab:AddButton(opt) return Elements.Button.new(self.Container, opt) end
     function Tab:AddToggle(opt) return Elements.Toggle.new(self.Container, opt, self.Window) end
@@ -423,7 +469,6 @@ modules["Tab"] = function()
     function Tab:AddKeybind(opt) return Elements.Keybind.new(self.Container, opt, self.Window) end
     function Tab:AddColorPicker(opt) return Elements.ColorPicker.new(self.Container, opt, self.Window) end
     function Tab:AddSection(opt) return Elements.Section.new(self.Container, opt) end
-    
     return Tab
 end
 
@@ -446,22 +491,29 @@ modules["Window"] = function()
         self.Gui = Instance.new("ScreenGui", target); self.Gui.Name="Difulent"
         
         self.Main = Creator.New("Frame", {Parent=self.Gui, Size=options.Size or UDim2.fromOffset(580,460), Position=UDim2.fromScale(0.5,0.5), AnchorPoint=Vector2.new(0.5,0.5), BackgroundColor3="Background", ThemeTag={BackgroundColor3="Background"}})
-        Creator.AddCorner(self.Main, 10)
+        Creator.AddCorner(self.Main, 8)
+        -- Shadow
+        local s = Instance.new("ImageLabel", self.Main); s.Size=UDim2.new(1,40,1,40); s.Position=UDim2.new(0,-20,0,-20); s.BackgroundTransparency=1; s.ZIndex=0
+        s.Image="rbxassetid://6015897843"; s.ImageColor3=Color3.new(0,0,0); s.ImageTransparency=0.5; s.ScaleType=Enum.ScaleType.Slice; s.SliceCenter=Rect.new(49,49,450,450)
+        
         Utility.EnableDragging(self.Main)
         
         self.Sidebar = Creator.New("Frame", {Parent=self.Main, Size=UDim2.new(0,200,1,0), BackgroundColor3="Surface", ThemeTag={BackgroundColor3="Surface"}})
-        Creator.AddCorner(self.Sidebar, 10)
+        Creator.AddCorner(self.Sidebar, 8)
         
-        self.SidebarList = Creator.New("ScrollingFrame", {Parent=self.Sidebar, Size=UDim2.new(1,0,1,-50), Position=UDim2.new(0,0,0,50), BackgroundTransparency=1, CanvasSize=UDim2.new(0,0,0,0)})
+        self.SidebarList = Creator.New("ScrollingFrame", {Parent=self.Sidebar, Size=UDim2.new(1,0,1,-60), Position=UDim2.new(0,0,0,60), BackgroundTransparency=1, CanvasSize=UDim2.new(0,0,0,0)})
         Instance.new("UIListLayout", self.SidebarList).Padding = UDim.new(0,5)
         Creator.AddPadding(self.SidebarList, 10)
         
-        Creator.New("TextLabel", {Parent=self.Sidebar, Size=UDim2.new(1,-20,0,40), Position=UDim2.new(0,10,0,5), Text=options.Title, TextSize=18, Font=Enum.Font.GothamBold, BackgroundTransparency=1, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        local title = Creator.New("TextLabel", {Parent=self.Sidebar, Size=UDim2.new(1,-20,0,40), Position=UDim2.new(0,15,0,15), Text=options.Title, TextSize=22, Font=Enum.Font.GothamBold, BackgroundTransparency=1, TextColor3="Text", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        if options.SubTitle then
+            Creator.New("TextLabel", {Parent=self.Sidebar, Size=UDim2.new(1,-20,0,15), Position=UDim2.new(0,15,0,40), Text=options.SubTitle, TextSize=11, Font=Enum.Font.Gotham, BackgroundTransparency=1, TextColor3="Accent", TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Accent"}})
+        end
+        
         self.Content = Creator.New("Frame", {Parent=self.Main, Size=UDim2.new(1,-200,1,0), Position=UDim2.new(0,200,0,0), BackgroundTransparency=1})
         
-        -- Notification Holder
         self.NotifHolder = Instance.new("Frame", self.Gui)
-        self.NotifHolder.Size = UDim2.new(1,-20,1,-20); self.NotifHolder.Position=UDim2.new(0,10,0,10); self.NotifHolder.BackgroundTransparency=1; self.NotifHolder.ZIndex=100
+        self.NotifHolder.Size = UDim2.new(0, 300, 1, -20); self.NotifHolder.Position=UDim2.new(1,-320,0,10); self.NotifHolder.BackgroundTransparency=1; self.NotifHolder.ZIndex=100
         local nl = Instance.new("UIListLayout", self.NotifHolder); nl.VerticalAlignment=Enum.VerticalAlignment.Bottom; nl.HorizontalAlignment=Enum.HorizontalAlignment.Right; nl.Padding=UDim.new(0,5)
         
         return self
@@ -473,9 +525,13 @@ modules["Window"] = function()
         return t
     end
     function Window:Notify(opt)
-        local f = Creator.New("Frame", {Parent=self.NotifHolder, Size=UDim2.new(0,250,0,60), BackgroundColor3="Surface", ThemeTag={BackgroundColor3="Surface"}}); Creator.AddCorner(f,8)
-        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-10,0,20), Position=UDim2.fromOffset(10,5), Text=opt.Title, Font=Enum.Font.GothamBold, TextSize=14, TextColor3="Text", BackgroundTransparency=1, TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
-        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-10,0,30), Position=UDim2.fromOffset(10,25), Text=opt.Content, Font=Enum.Font.Gotham, TextSize=12, TextColor3="SubText", BackgroundTransparency=1, TextXAlignment=Enum.TextXAlignment.Left, TextWrapped=true, ThemeTag={TextColor3="SubText"}})
+        local f = Creator.New("Frame", {Parent=self.NotifHolder, Size=UDim2.new(1,0,0,0), BackgroundColor3="Surface", AutomaticSize=Enum.AutomaticSize.Y, ThemeTag={BackgroundColor3="Surface"}}); Creator.AddCorner(f,8); Creator.AddStroke(f, {Color="Outline", Thickness=1, ThemeTag={Color="Outline"}})
+        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-10,0,20), Position=UDim2.fromOffset(10,8), Text=opt.Title, Font=Enum.Font.GothamBold, TextSize=14, TextColor3="Text", BackgroundTransparency=1, TextXAlignment=Enum.TextXAlignment.Left, ThemeTag={TextColor3="Text"}})
+        Creator.New("TextLabel", {Parent=f, Size=UDim2.new(1,-10,0,0), Position=UDim2.fromOffset(10,28), Text=opt.Content, Font=Enum.Font.Gotham, TextSize=12, TextColor3="SubText", BackgroundTransparency=1, TextXAlignment=Enum.TextXAlignment.Left, TextWrapped=true, AutomaticSize=Enum.AutomaticSize.Y, ThemeTag={TextColor3="SubText"}})
+        Creator.AddPadding(f, 10)
+        -- Glow
+        local g = Instance.new("ImageLabel", f); g.Size=UDim2.new(1,30,1,30); g.Position=UDim2.new(0,-15,0,-15); g.BackgroundTransparency=1; g.ZIndex=0; g.Image="rbxassetid://6015897843"; g.ImageColor3=Color3.new(0,0,0); g.ImageTransparency=0.6; g.ScaleType=Enum.ScaleType.Slice; g.SliceCenter=Rect.new(49,49,450,450)
+        
         task.delay(opt.Duration or 3, function() f:Destroy() end)
     end
     return Window
