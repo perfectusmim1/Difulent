@@ -3,7 +3,7 @@ local Window = require(script.Components.Window)
 local ThemeManager = require(script.ThemeManager)
 
 local Library = {}
-Library.Version = "1.2.0"
+Library.Version = "1.3.0"
 Library._windows = {}
 Library._lastWindow = nil
 
@@ -57,6 +57,24 @@ function Library:Notify(options)
     end
     warn("Phantasm: No window available for notifications.")
     return false
+end
+
+function Library:Dialog(options)
+    local target = Library._lastWindow
+    if target and target.Dialog then
+        return target:Dialog(options)
+    end
+    warn("Phantasm: No window available for dialogs.")
+    return nil
+end
+
+function Library:Popup(options)
+    local target = Library._lastWindow
+    if target and target.Popup then
+        return target:Popup(options)
+    end
+    warn("Phantasm: No window available for popups.")
+    return nil
 end
 
 function Library:Destroy()

@@ -45,6 +45,44 @@ MainTab:AddButton({
     end
 })
 
+MainTab:AddButton({
+    Title = "Open Dialog",
+    Callback = function()
+        Window:Dialog({
+            Title = "Confirm Action",
+            Content = "Do you want to continue?",
+            Buttons = {
+                {
+                    Title = "Yes",
+                    Primary = true,
+                    Callback = function()
+                        Window:Notify({ Title = "Dialog", Content = "Confirmed.", Duration = 2 })
+                    end
+                },
+                { Title = "Cancel" }
+            }
+        })
+    end
+})
+
+MainTab:AddButton({
+    Title = "Open Popup",
+    Callback = function()
+        Window:Popup({
+            Items = {
+                { Title = "Copy Discord", Icon = "copy", Callback = function()
+                    if setclipboard then setclipboard("https://discord.gg/example") end
+                    Window:Notify({ Title = "Popup", Content = "Copied link.", Duration = 2 })
+                end },
+                { Separator = true },
+                { Title = "Toggle Option", Toggle = true, Checked = true, KeepOpen = true, Callback = function(state)
+                    Window:Notify({ Title = "Popup", Content = "Toggle: " .. tostring(state), Duration = 2 })
+                end }
+            }
+        })
+    end
+})
+
 MainTab:AddToggle({
     Title = "Auto Farm",
     Default = false,
@@ -116,22 +154,11 @@ FeaturesTab:AddInput({
 -- [[ Settings Tab ]]
 local SettingsTab = Window:AddTab({ Title = "Settings", Icon = "settings" })
 
-SettingsTab:AddButton({
-    Title = "Save Config",
-    Callback = function()
-        -- ConfigManager auto-binds to these if implemented in window options
-        -- For manual usage:
-        Window.ConfigManager:Save("MyConfig")
-        Window:Notify({Title="Config", Content="Saved MyConfig.json", Duration=2})
-    end
-})
-
-SettingsTab:AddButton({
-    Title = "Load Config",
-    Callback = function()
-        Window.ConfigManager:Load("MyConfig")
-        Window:Notify({Title="Config", Content="Loaded MyConfig.json", Duration=2})
-    end
+-- Config UI (Save/Load/Export/Import)
+Window:CreateConfigUI(SettingsTab, {
+    SectionTitle = "Config Manager",
+    Collapsible = true,
+    Opened = true
 })
 
 SettingsTab:AddKeybind({

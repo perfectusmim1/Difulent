@@ -2985,6 +2985,11 @@ function Window.new(options)
 	self.Flags = {}
 	self.ToggleKey = options.ToggleKey or Enum.KeyCode.RightShift
 
+	self.DialogMaid = nil
+	self.PopupMaid = nil
+	self.ActiveDialog = nil
+	self.ActivePopup = nil
+
 	self.ConfigOptions = options.Configs or {}
 	self.ConfigsEnabled = options.Configs ~= nil and self.ConfigOptions.Enabled ~= false
 	self.AutoSave = self.ConfigsEnabled and self.ConfigOptions.AutoSave == true
@@ -3032,6 +3037,32 @@ end
 
 function Window:_flagChanged()
 	self:_queueAutoSave()
+end
+
+function Window:_closeDialog()
+	if self.DialogMaid then
+		self.DialogMaid:DoCleaning()
+		self.DialogMaid = nil
+	end
+	if self.ActiveDialog then
+		pcall(function()
+			self.ActiveDialog:Destroy()
+		end)
+		self.ActiveDialog = nil
+	end
+end
+
+function Window:_closePopup()
+	if self.PopupMaid then
+		self.PopupMaid:DoCleaning()
+		self.PopupMaid = nil
+	end
+	if self.ActivePopup then
+		pcall(function()
+			self.ActivePopup:Destroy()
+		end)
+		self.ActivePopup = nil
+	end
 end
 
 function Window:_buildUI()
@@ -3684,6 +3715,169 @@ function Window:ImportConfig(json, silent)
 	return self.ConfigManager:Import(json, silent)
 end
 
+function Window:CreateConfigUI(container, options)
+	options = options or {}
+	if not container then
+		return nil
+	end
+
+	local root = container
+	if type(container.AddSection) == "function" and options.Section ~= false then
+		root = container:AddSection({
+			Title = options.SectionTitle or "Configs",
+			Collapsible = options.Collapsible ~= false,
+			Opened = options.Opened ~= false,
+		})
+	end
+
+	local state = {
+		Name = options.DefaultName or self.AutoSaveName,
+	}
+
+	local nameInput = nil
+	if type(root.AddInput) == "function" then
+		nameInput = root:AddInput({
+			Title = "Config Name",
+			Default = state.Name,
+			Placeholder = "config name",
+			Callback = function(text)
+				state.Name = text
+			end,
+		})
+	end
+
+	local configs = {}
+	if self.ConfigManager and type(self.ConfigManager.GetConfigs) == "function" then
+		configs = self.ConfigManager:GetConfigs()
+	end
+
+	local listDropdown = nil
+	if type(root.AddDropdown) == "function" then
+		listDropdown = root:AddDropdown({
+			Title = "Existing Configs",
+			Values = configs,
+			AllowNone = true,
+			Callback = function(val)
+				if val and val ~= "" then
+					state.Name = val
+					if nameInput and type(nameInput.Set) == "function" then
+						nameInput:Set(val, true)
+					end
+				end
+			end,
+		})
+	end
+
+	local function refreshList()
+		if listDropdown and type(listDropdown.Refresh) == "function" then
+			listDropdown:Refresh(self.ConfigManager:GetConfigs())
+		end
+	end
+
+	if type(root.AddButton) == "function" then
+		root:AddButton({
+			Title = "Refresh List",
+			Callback = function()
+				refreshList()
+				self:Notify({ Title = "Configs", Content = "List refreshed.", Duration = 2 })
+			end,
+		})
+
+		root:AddButton({
+			Title = "Save Config",
+			Callback = function()
+				local ok, msg = self:SaveConfig(state.Name)
+				self:Notify({
+					Title = ok and "Config" or "Config Error",
+					Content = ok and ("Saved " .. tostring(state.Name)) or (msg or "Save failed"),
+					Duration = 2,
+				})
+				refreshList()
+			end,
+		})
+
+		root:AddButton({
+			Title = "Load Config",
+			Callback = function()
+				local ok, msg = self:LoadConfig(state.Name, true)
+				self:Notify({
+					Title = ok and "Config" or "Config Error",
+					Content = ok and ("Loaded " .. tostring(state.Name)) or (msg or "Load failed"),
+					Duration = 2,
+				})
+			end,
+		})
+
+		root:AddButton({
+			Title = "Export Config",
+			Callback = function()
+				local json = self:ExportConfig()
+				local copied = false
+				if type(setclipboard) == "function" then
+					pcall(function()
+						setclipboard(json)
+						copied = true
+					end)
+				end
+
+				if copied then
+					self:Notify({ Title = "Config", Content = "Export copied to clipboard.", Duration = 2 })
+				else
+					self:Dialog({
+						Title = "Export Config",
+						Content = "Copy the JSON below.",
+						Input = {
+							Default = json,
+							Multiline = true,
+							ReadOnly = true,
+						},
+						Buttons = {
+							{ Title = "Close", Primary = true },
+						},
+					})
+				end
+			end,
+		})
+
+		root:AddButton({
+			Title = "Import Config",
+			Callback = function()
+				self:Dialog({
+					Title = "Import Config",
+					Content = "Paste JSON below to apply.",
+					Input = {
+						Default = "",
+						Placeholder = "Paste config JSON",
+						Multiline = true,
+					},
+					Buttons = {
+						{
+							Title = "Import",
+							Primary = true,
+							Callback = function(text)
+								local ok, msg = self:ImportConfig(text or "", true)
+								self:Notify({
+									Title = ok and "Config" or "Config Error",
+									Content = ok and "Imported config." or (msg or "Import failed"),
+									Duration = 2,
+								})
+							end,
+						},
+						{ Title = "Cancel" },
+					},
+				})
+			end,
+		})
+	end
+
+	return {
+		State = state,
+		NameInput = nameInput,
+		ListDropdown = listDropdown,
+		Root = root,
+	}
+end
+
 function Window:LockAllElements()
 	for _, element in ipairs(self.Elements) do
 		if type(element) == "table" and type(element.SetLocked) == "function" then
@@ -3722,6 +3916,398 @@ function Window:GetUnlockedElements()
 		end
 	end
 	return unlocked
+end
+
+function Window:Dialog(options)
+	options = options or {}
+	self:_closeDialog()
+
+	local maid = Maid.new()
+	self.DialogMaid = maid
+
+	local overlay = Instance.new("TextButton")
+	overlay.Name = "DialogOverlay"
+	overlay.AutoButtonColor = false
+	overlay.Text = ""
+	overlay.BackgroundColor3 = Color3.new(0, 0, 0)
+	overlay.BackgroundTransparency = 0.45
+	overlay.Size = UDim2.fromScale(1, 1)
+	overlay.ZIndex = 400
+	overlay.Parent = self.Gui
+	maid:GiveTask(overlay)
+
+	local closeOnOutside = options.CloseOnOutside ~= false
+	if closeOnOutside then
+		maid:GiveTask(overlay.MouseButton1Click:Connect(function()
+			self:_closeDialog()
+		end))
+	end
+
+	if options.CloseOnEscape ~= false then
+		maid:GiveTask(UserInputService.InputBegan:Connect(function(input, gp)
+			if gp then
+				return
+			end
+			if input.UserInputType == Enum.UserInputType.Keyboard and input.KeyCode == Enum.KeyCode.Escape then
+				self:_closeDialog()
+			end
+		end))
+	end
+
+	local dialog = Creator.New("Frame", {
+		Parent = self.Gui,
+		Size = UDim2.fromOffset(options.Width or 360, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		Position = UDim2.fromScale(0.5, 0.5),
+		AnchorPoint = Vector2.new(0.5, 0.5),
+		BackgroundColor3 = "Surface",
+		BackgroundTransparency = 0.05,
+		BorderSizePixel = 0,
+		ZIndex = 401,
+		ThemeTag = { BackgroundColor3 = "Surface" },
+	})
+	Creator.AddCorner(dialog, 14)
+	Creator.AddStroke(dialog, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddPadding(dialog, 16)
+	maid:GiveTask(dialog)
+	self.ActiveDialog = dialog
+
+	local title = Creator.New("TextLabel", {
+		Parent = dialog,
+		Size = UDim2.new(1, 0, 0, 18),
+		BackgroundTransparency = 1,
+		Text = options.Title or "Dialog",
+		Font = Enum.Font.GothamBold,
+		TextSize = 15,
+		TextColor3 = "Text",
+		TextXAlignment = Enum.TextXAlignment.Left,
+		ZIndex = 402,
+		ThemeTag = { TextColor3 = "Text" },
+	})
+	title.LayoutOrder = 1
+
+	local contentText = options.Content or options.Text or ""
+	local content = Creator.New("TextLabel", {
+		Parent = dialog,
+		Size = UDim2.new(1, 0, 0, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundTransparency = 1,
+		Text = contentText,
+		Font = Enum.Font.Gotham,
+		TextSize = 13,
+		TextColor3 = "SubText",
+		TextXAlignment = Enum.TextXAlignment.Left,
+		TextWrapped = true,
+		ZIndex = 402,
+		ThemeTag = { TextColor3 = "SubText" },
+	})
+	content.LayoutOrder = 2
+
+	local inputBox = nil
+	if type(options.Input) == "table" then
+		local input = options.Input
+		local height = input.Multiline and 110 or 34
+		inputBox = Creator.New("TextBox", {
+			Parent = dialog,
+			Size = UDim2.new(1, 0, 0, height),
+			BackgroundColor3 = "Surface2",
+			BackgroundTransparency = 0.2,
+			BorderSizePixel = 0,
+			ClearTextOnFocus = false,
+			Text = input.Default or "",
+			PlaceholderText = input.Placeholder or "",
+			Font = Enum.Font.Gotham,
+			TextSize = 13,
+			TextColor3 = "Text",
+			PlaceholderColor3 = "Placeholder",
+			TextXAlignment = Enum.TextXAlignment.Left,
+			TextYAlignment = input.Multiline and Enum.TextYAlignment.Top or Enum.TextYAlignment.Center,
+			TextWrapped = input.Multiline == true,
+			MultiLine = input.Multiline == true,
+			ZIndex = 402,
+			ThemeTag = {
+				BackgroundColor3 = "Surface2",
+				TextColor3 = "Text",
+				PlaceholderColor3 = "Placeholder",
+			},
+		})
+		Creator.AddCorner(inputBox, 10)
+		Creator.AddStroke(inputBox, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+		if input.ReadOnly == true then
+			inputBox.TextEditable = false
+		end
+		inputBox.LayoutOrder = 3
+	end
+
+	local buttonRow = Instance.new("Frame")
+	buttonRow.Name = "Buttons"
+	buttonRow.BackgroundTransparency = 1
+	buttonRow.Size = UDim2.new(1, 0, 0, 34)
+	buttonRow.ZIndex = 402
+	buttonRow.Parent = dialog
+	buttonRow.LayoutOrder = 4
+
+	local buttonLayout = Instance.new("UIListLayout")
+	buttonLayout.FillDirection = Enum.FillDirection.Horizontal
+	buttonLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+	buttonLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+	buttonLayout.Padding = UDim.new(0, 8)
+	buttonLayout.Parent = buttonRow
+
+	local buttons = options.Buttons
+	if type(buttons) ~= "table" or #buttons == 0 then
+		buttons = { { Title = "OK", Primary = true } }
+	end
+
+	for _, btn in ipairs(buttons) do
+		local isPrimary = btn.Primary == true
+		local button = Creator.New("TextButton", {
+			Parent = buttonRow,
+			Size = UDim2.fromOffset(btn.Width or 90, 30),
+			BackgroundColor3 = isPrimary and "Accent" or "Surface2",
+			BackgroundTransparency = isPrimary and 0.05 or 0.2,
+			Text = btn.Title or "Button",
+			AutoButtonColor = false,
+			Font = Enum.Font.GothamMedium,
+			TextSize = 13,
+			TextColor3 = isPrimary and "Background" or "Text",
+			ZIndex = 403,
+			ThemeTag = {
+				BackgroundColor3 = isPrimary and "Accent" or "Surface2",
+				TextColor3 = isPrimary and "Background" or "Text",
+			},
+		})
+		Creator.AddCorner(button, 10)
+
+		maid:GiveTask(button.MouseEnter:Connect(function()
+			Utility.Tween(button, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+				BackgroundTransparency = isPrimary and 0 or 0.1,
+			})
+		end))
+		maid:GiveTask(button.MouseLeave:Connect(function()
+			Utility.Tween(button, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+				BackgroundTransparency = isPrimary and 0.05 or 0.2,
+			})
+		end))
+
+		maid:GiveTask(button.MouseButton1Click:Connect(function()
+			local value = inputBox and inputBox.Text or nil
+			if type(btn.Callback) == "function" then
+				btn.Callback(value)
+			end
+			if btn.Close ~= false then
+				self:_closeDialog()
+			end
+		end))
+	end
+
+	local layout = Instance.new("UIListLayout")
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
+	layout.Padding = UDim.new(0, 10)
+	layout.Parent = dialog
+
+	return {
+		Close = function()
+			self:_closeDialog()
+		end,
+		Dialog = dialog,
+		Input = inputBox,
+	}
+end
+
+function Window:Popup(options)
+	options = options or {}
+	self:_closePopup()
+
+	local maid = Maid.new()
+	self.PopupMaid = maid
+
+	local main = self.Main
+	local overlay = Instance.new("TextButton")
+	overlay.Name = "PopupOverlay"
+	overlay.AutoButtonColor = false
+	overlay.Text = ""
+	overlay.BackgroundTransparency = 1
+	overlay.Size = UDim2.fromScale(1, 1)
+	overlay.ZIndex = 350
+	overlay.Parent = main
+	maid:GiveTask(overlay)
+
+	maid:GiveTask(overlay.MouseButton1Click:Connect(function()
+		self:_closePopup()
+	end))
+
+	local frame = Creator.New("Frame", {
+		Parent = main,
+		Size = UDim2.fromOffset(options.Width or 200, 0),
+		AutomaticSize = Enum.AutomaticSize.Y,
+		BackgroundColor3 = "Surface",
+		BackgroundTransparency = 0.05,
+		BorderSizePixel = 0,
+		ZIndex = 360,
+		ThemeTag = { BackgroundColor3 = "Surface" },
+	})
+	Creator.AddCorner(frame, 12)
+	Creator.AddStroke(frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddPadding(frame, 8)
+	self.ActivePopup = frame
+	maid:GiveTask(frame)
+
+	local list = Instance.new("UIListLayout")
+	list.SortOrder = Enum.SortOrder.LayoutOrder
+	list.Padding = UDim.new(0, 4)
+	list.Parent = frame
+
+	local function anchorPosition()
+		if typeof(options.Position) == "Vector2" then
+			return options.Position
+		end
+		if typeof(options.Position) == "UDim2" then
+			return main.AbsolutePosition + Vector2.new(options.Position.X.Offset, options.Position.Y.Offset)
+		end
+		local target = options.Target or options.Anchor
+		if typeof(target) == "Instance" and target:IsA("GuiObject") then
+			return target.AbsolutePosition + Vector2.new(0, target.AbsoluteSize.Y + 6)
+		end
+		local mousePos = UserInputService:GetMouseLocation()
+		return Vector2.new(mousePos.X, mousePos.Y)
+	end
+
+	local function clampPosition()
+		local pos = anchorPosition()
+		local mainPos = main.AbsolutePosition
+		local rel = pos - mainPos
+		local size = frame.AbsoluteSize
+		local maxX = main.AbsoluteSize.X - size.X - 8
+		local maxY = main.AbsoluteSize.Y - size.Y - 8
+		local x = math.clamp(rel.X, 8, math.max(8, maxX))
+		local y = math.clamp(rel.Y, 8, math.max(8, maxY))
+		frame.Position = UDim2.fromOffset(x, y)
+	end
+
+	maid:GiveTask(list:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+		clampPosition()
+	end))
+
+	local items = options.Items or {}
+	for _, item in ipairs(items) do
+		if item.Separator then
+			local sep = Creator.New("Frame", {
+				Parent = frame,
+				Size = UDim2.new(1, -8, 0, 1),
+				BackgroundColor3 = "Outline",
+				BackgroundTransparency = 0.7,
+				BorderSizePixel = 0,
+				ZIndex = 361,
+				ThemeTag = { BackgroundColor3 = "Outline" },
+			})
+		else
+			local disabled = item.Disabled == true
+			local row = Creator.New("TextButton", {
+				Parent = frame,
+				Size = UDim2.new(1, 0, 0, 30),
+				BackgroundColor3 = "Surface2",
+				BackgroundTransparency = 1,
+				Text = "",
+				AutoButtonColor = false,
+				ZIndex = 361,
+				ThemeTag = { BackgroundColor3 = "Surface2" },
+			})
+			Creator.AddCorner(row, 8)
+
+			local icon = nil
+			local leftPad = 10
+			if item.Icon then
+				icon = Creator.New("ImageLabel", {
+					Parent = row,
+					Size = UDim2.fromOffset(16, 16),
+					Position = UDim2.new(0, 8, 0.5, -8),
+					BackgroundTransparency = 1,
+					Image = Utility.GetIcon(item.Icon),
+					ImageColor3 = "Icon",
+					ZIndex = 362,
+					ThemeTag = { ImageColor3 = "Icon" },
+				})
+				leftPad = 30
+			end
+
+			local label = Creator.New("TextLabel", {
+				Parent = row,
+				Size = UDim2.new(1, -40, 1, 0),
+				Position = UDim2.fromOffset(leftPad, 0),
+				BackgroundTransparency = 1,
+				Text = item.Title or "Item",
+				Font = Enum.Font.Gotham,
+				TextSize = 13,
+				TextColor3 = "Text",
+				TextXAlignment = Enum.TextXAlignment.Left,
+				ZIndex = 362,
+				ThemeTag = { TextColor3 = "Text" },
+			})
+
+			local check = Creator.New("ImageLabel", {
+				Parent = row,
+				Size = UDim2.fromOffset(16, 16),
+				Position = UDim2.new(1, -22, 0.5, -8),
+				BackgroundTransparency = 1,
+				Image = Utility.GetIcon("check"),
+				ImageColor3 = "Accent",
+				Visible = item.Checked == true,
+				ZIndex = 362,
+				ThemeTag = { ImageColor3 = "Accent" },
+			})
+
+			if disabled then
+				label.TextTransparency = 0.4
+				if icon then
+					icon.ImageTransparency = 0.4
+				end
+				check.ImageTransparency = 0.4
+			end
+
+			maid:GiveTask(row.MouseEnter:Connect(function()
+				if disabled then
+					return
+				end
+				Utility.Tween(row, TweenInfo.new(0.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.5 })
+			end))
+			maid:GiveTask(row.MouseLeave:Connect(function()
+				if disabled then
+					return
+				end
+				Utility.Tween(row, TweenInfo.new(0.1, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 1 })
+			end))
+
+			maid:GiveTask(row.MouseButton1Click:Connect(function()
+				if disabled then
+					return
+				end
+				local keepOpen = item.KeepOpen == true
+				if item.Toggle then
+					item.Checked = not item.Checked
+					check.Visible = item.Checked == true
+					keepOpen = item.KeepOpen ~= false
+				end
+				if type(item.Callback) == "function" then
+					item.Callback(item.Checked, item)
+				end
+				if not keepOpen then
+					self:_closePopup()
+				end
+			end))
+		end
+	end
+
+	task.defer(function()
+		clampPosition()
+	end)
+
+	return {
+		Close = function()
+			self:_closePopup()
+		end,
+		Popup = frame,
+	}
 end
 
 function Window:Notify(options)
@@ -3813,6 +4399,9 @@ function Window:Destroy()
 		end
 	end
 
+	self:_closeDialog()
+	self:_closePopup()
+
 	if self.ResizeMaid then
 		self.ResizeMaid:DoCleaning()
 		self.ResizeMaid = nil
@@ -3835,7 +4424,7 @@ local Window = requireModule("Window")
 local ThemeManager = requireModule("ThemeManager")
 
 local Library = {}
-Library.Version = "1.2.0"
+Library.Version = "1.3.0"
 Library._windows = {}
 Library._lastWindow = nil
 
@@ -3889,6 +4478,24 @@ function Library:Notify(options)
     end
     warn("Phantasm: No window available for notifications.")
     return false
+end
+
+function Library:Dialog(options)
+    local target = Library._lastWindow
+    if target and target.Dialog then
+        return target:Dialog(options)
+    end
+    warn("Phantasm: No window available for dialogs.")
+    return nil
+end
+
+function Library:Popup(options)
+    local target = Library._lastWindow
+    if target and target.Popup then
+        return target:Popup(options)
+    end
+    warn("Phantasm: No window available for popups.")
+    return nil
 end
 
 function Library:Destroy()

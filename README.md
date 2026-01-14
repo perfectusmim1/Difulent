@@ -1,7 +1,7 @@
 # Phantasm UI Library
 
 A premium, production-grade UI library for Roblox, inspired by Fluent and Rayfield.
-Designed for both **Roblox Studio** and **Executors**.
+Designed for **Executors** (loadstring-friendly).
 
 ## Features
 
@@ -10,6 +10,8 @@ Designed for both **Roblox Studio** and **Executors**.
 - **Single-File Dist**: Run everything with one `loadstring` in `dist/main.lua`.
 - **Robust**: Maid-based cleanup, Signal-based events, strict error handling.
 - **Theming**: Built-in Dark, Midnight, Ocean themes with full custom support.
+- **Dialogs & Popups**: Global dialogs and context menus for UX workflows.
+- **Config UI**: Built-in save/load/export/import panel helper.
 
 ## Quick Start (Executor)
 
@@ -27,15 +29,6 @@ Tab:AddButton({
     Title = "Execute",
     Callback = function() print("Hello") end
 })
-```
-
-## Quick Start (Studio)
-
-Copy the `src` folder to `ReplicatedStorage`.
-
-```lua
-local Library = require(game.ReplicatedStorage.Phantasm.src.init)
--- Same API usage as above
 ```
 
 ## Project Structure

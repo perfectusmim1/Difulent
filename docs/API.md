@@ -16,6 +16,30 @@ Creates a new UI Window.
 Sets the global theme.
 - `themeName`: "Dark" | "Midnight" | "Ocean" | "OLED" | "Emerald"
 
+### `Library:AddTheme(themeTable)`
+Adds a custom theme (`themeTable.Name` required).
+
+### `Library:GetThemes()`
+Returns a list of available theme names.
+
+### `Library:GetTheme()`
+Returns the current theme table.
+
+### `Library:GetThemeName()`
+Returns the current theme name.
+
+### `Library:Notify(payload)`
+Global notification (routes to last created Window).
+
+### `Library:Dialog(payload)`
+Global modal dialog (routes to last created Window).
+
+### `Library:Popup(payload)`
+Global context popup (routes to last created Window).
+
+### `Library:Destroy()`
+Destroys all windows.
+
 ## Window
 
 ### `Window:AddTab(options)`
@@ -24,6 +48,48 @@ Sets the global theme.
 
 ### `Window:Toggle()`
 Toggles visibility.
+
+### `Window:Open()` / `Window:Close()`
+Shows or hides the window.
+
+### `Window:SetTheme(nameOrTable)`
+Applies a theme to the UI.
+
+### `Window:SetToggleKey(keyCode)`
+Updates the toggle key at runtime.
+
+### `Window:SetSize(UDim2)`
+Resizes the window.
+
+### `Window:SetResizable(bool)`
+Enables/disables resizing at runtime.
+
+### `Window:Notify(payload)`
+Shows a notification (per-window).
+
+### `Window:Dialog(payload)`
+Shows a modal dialog. Supports optional input field.
+
+### `Window:Popup(payload)`
+Shows a context popup menu (items/separators/toggles).
+
+### `Window:SaveConfig(name)` / `Window:LoadConfig(name, silent?)`
+Save/load configuration (silent defaults to true for Load).
+
+### `Window:ExportConfig()` / `Window:ImportConfig(json, silent?)`
+Export/import JSON configuration.
+
+### `Window:CreateConfigUI(container, options?)`
+Creates a config manager UI block inside a Tab or Section.
+
+### `Window:LockAllElements()` / `Window:UnlockAllElements()`
+Locks/unlocks all elements (if supported).
+
+### `Window:GetAllElements()`
+Returns registered elements.
+
+### `Window:GetLockedElements()` / `Window:GetUnlockedElements()`
+Returns element subsets by lock state.
 
 ### `Window:Destroy()`
 Cleans up the UI.
@@ -45,6 +111,12 @@ Cleans up the UI.
 - `Title`: Text to display
 - `Flag`: Unique string for config saving
 - `Callback`: Function(value) triggers on change
+- Common methods (where supported):
+  - `Set(value, silent?)`
+  - `Get()`
+  - `SetEnabled(bool)`
+  - `SetLocked(bool)`
+  - `Destroy()`
 
 ## ConfigManager (Internal)
 Automatically handles saving if `Folder` is provided in Window options and executor supports `writefile`.
