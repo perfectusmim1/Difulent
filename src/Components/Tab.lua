@@ -99,37 +99,16 @@ function Tab:Select()
 end
 
 -- Proxy Methods for Elements
--- Note: In a real module loading system, we'd require the Element modules here.
--- To ensure single-file compatibility later, we assume these exist.
 
-function Tab:AddButton(options)
-    local Button = require(script.Parent.Elements.Button)
-    return Button.new(self.Container, options)
-end
-
-function Tab:AddToggle(options)
-    local Toggle = require(script.Parent.Elements.Toggle)
-    return Toggle.new(self.Container, options, self.Window)
-end
-
-function Tab:AddSlider(options)
-    local Slider = require(script.Parent.Elements.Slider)
-    return Slider.new(self.Container, options, self.Window)
-end
-
-function Tab:AddLabel(options)
-    local Label = require(script.Parent.Elements.Label)
-    return Label.new(self.Container, options)
-end
-
-function Tab:AddInput(options)
-    local Input = require(script.Parent.Elements.Input)
-    return Input.new(self.Container, options, self.Window)
-end
-
-function Tab:AddDropdown(options)
-    local Dropdown = require(script.Parent.Elements.Dropdown)
-    return Dropdown.new(self.Container, options, self.Window)
-end
+function Tab:AddButton(options) return require(script.Parent.Elements.Button).new(self.Container, options) end
+function Tab:AddToggle(options) return require(script.Parent.Elements.Toggle).new(self.Container, options, self.Window) end
+function Tab:AddSlider(options) return require(script.Parent.Elements.Slider).new(self.Container, options, self.Window) end
+function Tab:AddLabel(options) return require(script.Parent.Elements.Label).new(self.Container, options) end
+function Tab:AddParagraph(options) return require(script.Parent.Elements.Paragraph).new(self.Container, options) end
+function Tab:AddInput(options) return require(script.Parent.Elements.Input).new(self.Container, options, self.Window) end
+function Tab:AddDropdown(options) return require(script.Parent.Elements.Dropdown).new(self.Container, options, self.Window) end
+function Tab:AddKeybind(options) return require(script.Parent.Elements.Keybind).new(self.Container, options, self.Window) end
+function Tab:AddColorPicker(options) return require(script.Parent.Elements.ColorPicker).new(self.Container, options, self.Window) end
+function Tab:AddSection(options) return require(script.Parent.Elements.Section).new(self.Container, options) end
 
 return Tab

@@ -1,5 +1,5 @@
 -- Phantasm Example (Client / Studio)
-local Library = require(script.Parent.Parent.src.init)
+local Library = loadstring(game:HttpGet(https://raw.githubusercontent.com/perfectusmim1/Difulent/main/dist/main.lua))()
 
 local Window = Library.CreateWindow({
     Title = "Phantasm Example",
