@@ -50,15 +50,15 @@ function Tab.new(window, options)
 
 	self.Indicator = Creator.New("Frame", {
 		Parent = self.Button,
-		Size = UDim2.fromOffset(3, 18),
-		Position = UDim2.new(0, 8, 0.5, -9),
+		Size = UDim2.fromOffset(2, 16),
+		Position = UDim2.new(0, 4, 0.5, -8),
 		BackgroundColor3 = "Accent",
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		ZIndex = 13,
 		ThemeTag = { BackgroundColor3 = "Accent" },
 	})
-	Creator.AddCorner(self.Indicator, 2)
+	Creator.AddCorner(self.Indicator, 1)
 
 	local leftPad = 12
 	if self.Icon then
@@ -120,8 +120,8 @@ function Tab.new(window, options)
 		if self.Window.ActiveTab == self then
 			return
 		end
-		Utility.Tween(self.Button, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-			BackgroundTransparency = 0.7,
+		Utility.Tween(self.Button, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 0.8,
 		})
 	end))
 
@@ -129,7 +129,7 @@ function Tab.new(window, options)
 		if self.Window.ActiveTab == self then
 			return
 		end
-		Utility.Tween(self.Button, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+		Utility.Tween(self.Button, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 			BackgroundTransparency = 1,
 		})
 	end))

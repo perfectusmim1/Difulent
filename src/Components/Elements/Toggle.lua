@@ -36,18 +36,18 @@ function Toggle.new(container, options, window)
 
 	self.Frame = Creator.New("TextButton", {
 		Parent = container,
-		Size = UDim2.new(1, 0, 0, 44),
+		Size = UDim2.new(1, 0, 0, 42),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = self._baseTransparency,
+		BackgroundTransparency = 0.5,
 		Text = "",
 		AutoButtonColor = false,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 14)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 10)
+	self.Stroke = Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
 	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.05),
-		NumberSequenceKeypoint.new(1, 0.15),
+		NumberSequenceKeypoint.new(0, 0.45),
+		NumberSequenceKeypoint.new(1, 0.55),
 	}))
 	self.Maid:GiveTask(self.Frame)
 
@@ -90,13 +90,15 @@ function Toggle.new(container, options, window)
 		if self.Disabled or self.Locked then
 			return
 		end
-		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.06 })
+		Utility.Tween(self.Frame, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.35 })
+		Utility.Tween(self.Stroke, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Transparency = 0.5 })
 	end))
 	self.Maid:GiveTask(self.Frame.MouseLeave:Connect(function()
 		if self.Disabled or self.Locked then
 			return
 		end
-		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = self._baseTransparency })
+		Utility.Tween(self.Frame, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.5 })
+		Utility.Tween(self.Stroke, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { Transparency = 0.8 })
 	end))
 
 	self.Maid:GiveTask(self.Frame.MouseButton1Click:Connect(function()

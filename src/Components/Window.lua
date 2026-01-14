@@ -182,24 +182,6 @@ function Window:_buildUI()
 		baseTransparency = 0.12
 	end
 
-	-- Global blur (Acrylic)
-	if material == "acrylic" then
-		blurUsers = blurUsers + 1
-		if not sharedBlur then
-			sharedBlur = Instance.new("BlurEffect")
-			sharedBlur.Name = "PhantasmAcrylicBlur"
-			sharedBlur.Size = 18
-			sharedBlur.Parent = Lighting
-		end
-		self.Maid:GiveTask(function()
-			blurUsers = blurUsers - 1
-			if blurUsers <= 0 and sharedBlur then
-				sharedBlur:Destroy()
-				sharedBlur = nil
-				blurUsers = 0
-			end
-		end)
-	end
 
 	local parent = getDefaultGuiParent()
 	self.Gui = Instance.new("ScreenGui")
@@ -210,21 +192,6 @@ function Window:_buildUI()
 	self.Gui.Parent = parent
 	self.Maid:GiveTask(self.Gui)
 
-	-- Shadow (must not be clipped)
-	self.Shadow = Instance.new("ImageLabel")
-	self.Shadow.Name = "Shadow"
-	self.Shadow.AnchorPoint = Vector2.new(0.5, 0.5)
-	self.Shadow.Position = UDim2.fromScale(0.5, 0.5)
-	self.Shadow.BackgroundTransparency = 1
-	self.Shadow.Image = "rbxassetid://6015897843"
-	self.Shadow.ImageTransparency = 0.55
-	self.Shadow.ImageColor3 = Color3.new(0, 0, 0)
-	self.Shadow.ScaleType = Enum.ScaleType.Slice
-	self.Shadow.SliceCenter = Rect.new(49, 49, 450, 450)
-	self.Shadow.SliceScale = 1
-	self.Shadow.ZIndex = 1
-	self.Shadow.Parent = self.Gui
-	self.Maid:GiveTask(self.Shadow)
 
 	-- Overlay layer (popups / dropdowns / tooltips). Keep outside Main to avoid clipping.
 	self.OverlayLayer = Instance.new("Frame")
@@ -324,7 +291,7 @@ function Window:_buildUI()
 		Parent = self.Main,
 		Size = UDim2.new(1, 0, 0, TOPBAR_H),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = material == "opaque" and 0.06 or 0.18,
+		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		ZIndex = 10,
 		ThemeTag = { BackgroundColor3 = "Surface" },
@@ -456,7 +423,7 @@ function Window:_buildUI()
 		Size = UDim2.new(0, self.SidebarWidth, 1, -TOPBAR_H),
 		Position = UDim2.fromOffset(0, TOPBAR_H),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = material == "opaque" and 0.06 or 0.18,
+		BackgroundTransparency = material == "opaque" and 0.2 or 0.35,
 		BorderSizePixel = 0,
 		ZIndex = 10,
 		ThemeTag = { BackgroundColor3 = "Surface" },
@@ -563,10 +530,10 @@ function Window:_buildUI()
 		Parent = self.Main,
 		Size = UDim2.new(1, -self.SidebarWidth, 1, -TOPBAR_H),
 		Position = UDim2.fromOffset(self.SidebarWidth, TOPBAR_H),
-		BackgroundColor3 = "Surface",
-		BackgroundTransparency = material == "opaque" and 0.06 or 0.18,
+		BackgroundColor3 = "Background",
+		BackgroundTransparency = material == "opaque" and 1 or 0.85,
 		ZIndex = 10,
-		ThemeTag = { BackgroundColor3 = "Surface" },
+		ThemeTag = { BackgroundColor3 = "Background" },
 	})
 	Utility.AddGradient(self.Content, "Surface2", "Surface", NumberSequence.new({
 		NumberSequenceKeypoint.new(0, 0.05),
@@ -596,24 +563,8 @@ function Window:_buildUI()
 		self:_enableResizeGrip()
 	end
 
-	self:_syncShadow()
-	self.Maid:GiveTask(self.Main:GetPropertyChangedSignal("Size"):Connect(function()
-		self:_syncShadow()
-	end))
-	self.Maid:GiveTask(self.Main:GetPropertyChangedSignal("Position"):Connect(function()
-		self:_syncShadow()
-	end))
 end
 
-function Window:_syncShadow()
-	if not (self.Shadow and self.Main) then
-		return
-	end
-	self.Shadow.Position = self.Main.Position
-
-	local absSize = self.Main.AbsoluteSize
-	self.Shadow.Size = UDim2.fromOffset(absSize.X + 70, absSize.Y + 70)
-end
 
 function Window:_hookInput()
 	-- Dragging (topbar only)

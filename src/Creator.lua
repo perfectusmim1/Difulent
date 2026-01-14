@@ -42,12 +42,17 @@ end
 function Creator.AddStroke(instance, props)
     local stroke = Instance.new("UIStroke")
     stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Transparency = 0.65
+    stroke.Thickness = 1
     stroke.Parent = instance
-    ApplyProperties(stroke, props or {})
-    
-    if props.ThemeTag then
-		ThemeManager:Bind(stroke, props.ThemeTag)
+
+    if props then
+        ApplyProperties(stroke, props)
+        if props.ThemeTag then
+            ThemeManager:Bind(stroke, props.ThemeTag)
+        end
     end
+    
     return stroke
 end
 

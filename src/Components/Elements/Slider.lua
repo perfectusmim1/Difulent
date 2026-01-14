@@ -37,18 +37,18 @@ function Slider.new(container, options, window)
 
 	self.Frame = Creator.New("Frame", {
 		Parent = container,
-		Size = UDim2.new(1, 0, 0, 56),
+		Size = UDim2.new(1, 0, 0, 52),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = self._baseTransparency,
+		BackgroundTransparency = 0.5,
 		BorderSizePixel = 0,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 14)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
-	Creator.AddPadding(self.Frame, 14)
+	Creator.AddCorner(self.Frame, 10)
+	self.Stroke = Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddPadding(self.Frame, 12)
 	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.05),
-		NumberSequenceKeypoint.new(1, 0.15),
+		NumberSequenceKeypoint.new(0, 0.45),
+		NumberSequenceKeypoint.new(1, 0.55),
 	}))
 	self.Maid:GiveTask(self.Frame)
 
