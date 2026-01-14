@@ -1,5 +1,50 @@
 -- Executor example for Phantasm/Difulent
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/Difulent/refs/heads/main/dist/main.lua"))()
+local URL = "https://raw.githubusercontent.com/perfectusmim1/Difulent/refs/heads/main/dist/main.lua"
+
+local function httpGet(url)
+	if game and game.HttpGet then
+		return game:HttpGet(url)
+	end
+	if syn and syn.request then
+		local res = syn.request({ Url = url, Method = "GET" })
+		if res and res.Body then
+			return res.Body
+		end
+	end
+	if http_request then
+		local res = http_request({ Url = url, Method = "GET" })
+		if res and res.Body then
+			return res.Body
+		end
+	end
+	if request then
+		local res = request({ Url = url, Method = "GET" })
+		if res and res.Body then
+			return res.Body
+		end
+	end
+	error("Difulent: HTTP request not available in this executor.")
+end
+
+local function loadLibrary(source)
+	if type(source) ~= "string" then
+		error("Difulent: invalid response body.")
+	end
+	if source:sub(1, 3) == string.char(239, 187, 191) then
+		source = source:sub(4)
+	end
+	local loader = loadstring or load
+	if not loader then
+		error("Difulent: loadstring is not available in this executor.")
+	end
+	local chunk, err = loader(source)
+	if not chunk then
+		error(err or "Difulent: failed to load library.")
+	end
+	return chunk()
+end
+
+local Library = loadLibrary(httpGet(URL))
 
 Library:AddTheme({
 	Name = "Graphite",

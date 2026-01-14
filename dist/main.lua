@@ -3186,7 +3186,12 @@ function Window:_buildUI()
 		noise.Size = UDim2.fromScale(1, 1)
 		noise.Image = "rbxassetid://12975764033"
 		noise.ImageTransparency = 0.92
-		noise.ResampleMode = Enum.ResampleMode.Tile
+		local ok, resampleEnum = pcall(function()
+			return Enum.ResampleMode
+		end)
+		if ok and resampleEnum then
+			noise.ResampleMode = resampleEnum.Tile
+		end
 		noise.ScaleType = Enum.ScaleType.Tile
 		noise.TileSize = UDim2.fromOffset(128, 128)
 		noise.ZIndex = 4
