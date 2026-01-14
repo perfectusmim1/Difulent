@@ -32,7 +32,7 @@ function Dropdown.new(container, options, window)
 	self.Flag = options.Flag
 	self.Disabled = false
 	self.Locked = false
-	self._baseTransparency = 0.25
+	self._baseTransparency = 0.12
 
 	if self.Multi then
 		self.Value = options.Default or {}
@@ -47,14 +47,18 @@ function Dropdown.new(container, options, window)
 	self.Frame = Creator.New("Frame", {
 		Parent = container,
 		Size = UDim2.new(1, 0, 0, 70),
-		BackgroundColor3 = "Surface2",
+		BackgroundColor3 = "Surface",
 		BackgroundTransparency = self._baseTransparency,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface2" },
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 12)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
 	Creator.AddPadding(self.Frame, 14)
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
 	self.Maid:GiveTask(self.Frame)
 
 	self.TitleLabel = Creator.New("TextLabel", {
@@ -62,7 +66,7 @@ function Dropdown.new(container, options, window)
 		Size = UDim2.new(1, 0, 0, 18),
 		BackgroundTransparency = 1,
 		Text = options.Title or "Dropdown",
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -71,17 +75,17 @@ function Dropdown.new(container, options, window)
 
 	self.Display = Creator.New("TextButton", {
 		Parent = self.Frame,
-		Size = UDim2.new(1, 0, 0, 34),
+		Size = UDim2.new(1, 0, 0, 36),
 		Position = UDim2.new(0, 0, 0, 26),
-		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.25,
+		BackgroundColor3 = "Surface2",
+		BackgroundTransparency = 0.3,
 		Text = "",
 		AutoButtonColor = false,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface" },
+		ThemeTag = { BackgroundColor3 = "Surface2" },
 	})
 	Creator.AddCorner(self.Display, 10)
-	Creator.AddStroke(self.Display, { Color = "Outline", Thickness = 1, Transparency = 0.85, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.Display, { Color = "Outline", Thickness = 1, Transparency = 0.75, ThemeTag = { Color = "Outline" } })
 
 	self.DisplayLabel = Creator.New("TextLabel", {
 		Parent = self.Display,
@@ -289,13 +293,17 @@ function Dropdown:Open()
 		Parent = main,
 		Size = UDim2.fromOffset(self.Display.AbsoluteSize.X, 0),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.08,
+		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
 		ZIndex = 100,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(self.ListFrame, 12)
-	Creator.AddStroke(self.ListFrame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.ListFrame, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(self.ListFrame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 
 	local mainAbs = main.AbsolutePosition
 	local dispAbs = self.Display.AbsolutePosition
@@ -318,7 +326,7 @@ function Dropdown:Open()
 		Size = UDim2.new(1, -20, 0, 30),
 		Position = UDim2.fromOffset(10, 10),
 		BackgroundColor3 = "Surface2",
-		BackgroundTransparency = 0.25,
+		BackgroundTransparency = 0.3,
 		Text = "",
 		PlaceholderText = "Search",
 		Font = Enum.Font.Gotham,

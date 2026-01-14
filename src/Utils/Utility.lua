@@ -3,6 +3,7 @@ local TweenService = game:GetService("TweenService")
 local TextService = game:GetService("TextService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local ThemeManager = require(script.Parent.Parent.ThemeManager)
 
 local Utility = {}
 
@@ -134,6 +135,30 @@ function Utility.AddRipple(button, color)
     end)
 
     return conn
+end
+
+local function buildColorSequence(theme, topToken, bottomToken)
+    local top = theme[topToken] or Color3.new(1, 1, 1)
+    local bottom = theme[bottomToken] or top
+    return ColorSequence.new({
+        ColorSequenceKeypoint.new(0, top),
+        ColorSequenceKeypoint.new(1, bottom),
+    })
+end
+
+function Utility.AddGradient(instance, topToken, bottomToken, transparency, rotation)
+    local gradient = Instance.new("UIGradient")
+    gradient.Rotation = rotation or 90
+    if transparency then
+        gradient.Transparency = transparency
+    end
+    ThemeManager:Bind(gradient, {
+        Color = function(theme)
+            return buildColorSequence(theme, topToken, bottomToken)
+        end,
+    })
+    gradient.Parent = instance
+    return gradient
 end
 
 function Utility.Join(t1, t2)

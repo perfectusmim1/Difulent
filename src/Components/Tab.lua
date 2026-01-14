@@ -37,6 +37,16 @@ function Tab.new(window, options)
 		ThemeTag = { BackgroundColor3 = "Surface2" },
 	})
 	Creator.AddCorner(self.Button, 10)
+	self.SelectedStroke = Creator.AddStroke(self.Button, {
+		Color = "Accent",
+		Thickness = 1,
+		Transparency = 1,
+		ThemeTag = { Color = "Accent" },
+	})
+	Utility.AddGradient(self.Button, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.2),
+		NumberSequenceKeypoint.new(1, 0.6),
+	}))
 
 	self.Indicator = Creator.New("Frame", {
 		Parent = self.Button,
@@ -71,7 +81,7 @@ function Tab.new(window, options)
 		Position = UDim2.fromOffset(leftPad, 0),
 		BackgroundTransparency = 1,
 		Text = self.Title,
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "SubText",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -93,10 +103,10 @@ function Tab.new(window, options)
 		Visible = false,
 		ZIndex = 11,
 	})
-	Creator.AddPadding(self.Container, 16)
+	Creator.AddPadding(self.Container, 18)
 
 	local layout = Instance.new("UIListLayout")
-	layout.Padding = UDim.new(0, 10)
+	layout.Padding = UDim.new(0, 12)
 	layout.SortOrder = Enum.SortOrder.LayoutOrder
 	layout.Parent = self.Container
 	self.Maid:GiveTask(layout)
@@ -111,7 +121,7 @@ function Tab.new(window, options)
 			return
 		end
 		Utility.Tween(self.Button, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-			BackgroundTransparency = 0.6,
+			BackgroundTransparency = 0.7,
 		})
 	end))
 
@@ -149,6 +159,11 @@ function Tab:Select()
 		Utility.Tween(t.Button, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 			BackgroundTransparency = 1,
 		})
+		if t.SelectedStroke then
+			Utility.Tween(t.SelectedStroke, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+				Transparency = 1,
+			})
+		end
 	end
 
 	self.Container.Visible = true
@@ -165,8 +180,13 @@ function Tab:Select()
 	tweenToToken(self.Label, "TextColor3", "Text")
 
 	Utility.Tween(self.Button, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-		BackgroundTransparency = 0.25,
+		BackgroundTransparency = 0.2,
 	})
+	if self.SelectedStroke then
+		Utility.Tween(self.SelectedStroke, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			Transparency = 0.45,
+		})
+	end
 end
 
 function Tab:Destroy()

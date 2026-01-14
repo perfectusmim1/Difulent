@@ -126,6 +126,7 @@ local TweenService = game:GetService("TweenService")
 local TextService = game:GetService("TextService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local ThemeManager = requireModule("ThemeManager")
 
 local Utility = {}
 
@@ -259,6 +260,30 @@ function Utility.AddRipple(button, color)
     return conn
 end
 
+local function buildColorSequence(theme, topToken, bottomToken)
+    local top = theme[topToken] or Color3.new(1, 1, 1)
+    local bottom = theme[bottomToken] or top
+    return ColorSequence.new({
+        ColorSequenceKeypoint.new(0, top),
+        ColorSequenceKeypoint.new(1, bottom),
+    })
+end
+
+function Utility.AddGradient(instance, topToken, bottomToken, transparency, rotation)
+    local gradient = Instance.new("UIGradient")
+    gradient.Rotation = rotation or 90
+    if transparency then
+        gradient.Transparency = transparency
+    end
+    ThemeManager:Bind(gradient, {
+        Color = function(theme)
+            return buildColorSequence(theme, topToken, bottomToken)
+        end,
+    })
+    gradient.Parent = instance
+    return gradient
+end
+
 function Utility.Join(t1, t2)
     local t = {}
     for k,v in pairs(t1) do t[k] = v end
@@ -279,78 +304,78 @@ ThemeManager.ThemeChanged = Signal.new()
 
 ThemeManager.BuiltInThemes = {
     Dark = {
-        Accent = Color3.fromRGB(0, 120, 212),       -- Windows Blue
-        Background = Color3.fromRGB(32, 32, 32),    -- Dark Gray
-        Surface = Color3.fromRGB(45, 45, 45),       -- Slightly lighter
-        Surface2 = Color3.fromRGB(60, 60, 60),      -- Hover state
-        Outline = Color3.fromRGB(80, 80, 80),       -- Borders
-        Text = Color3.fromRGB(255, 255, 255),       -- White
-        SubText = Color3.fromRGB(180, 180, 180),    -- Light Gray
-        Placeholder = Color3.fromRGB(120, 120, 120),
-        Icon = Color3.fromRGB(180, 180, 180),
-        Success = Color3.fromRGB(108, 203, 95),
-        Warning = Color3.fromRGB(255, 212, 59),
-        Danger = Color3.fromRGB(255, 75, 75),
+        Accent = Color3.fromRGB(93, 142, 255),
+        Background = Color3.fromRGB(15, 17, 23),
+        Surface = Color3.fromRGB(22, 24, 31),
+        Surface2 = Color3.fromRGB(30, 33, 42),
+        Outline = Color3.fromRGB(44, 48, 60),
+        Text = Color3.fromRGB(230, 233, 240),
+        SubText = Color3.fromRGB(165, 172, 185),
+        Placeholder = Color3.fromRGB(110, 118, 130),
+        Icon = Color3.fromRGB(165, 172, 185),
+        Success = Color3.fromRGB(92, 214, 141),
+        Warning = Color3.fromRGB(250, 200, 110),
+        Danger = Color3.fromRGB(255, 100, 100),
         Shadow = Color3.fromRGB(0, 0, 0)
     },
     Midnight = {
-        Accent = Color3.fromRGB(114, 137, 218),     -- Blurpleish
-        Background = Color3.fromRGB(15, 15, 20),    -- Deep Blue/Black
-        Surface = Color3.fromRGB(25, 25, 35),
-        Surface2 = Color3.fromRGB(35, 35, 45),
-        Outline = Color3.fromRGB(45, 45, 60),
-        Text = Color3.fromRGB(240, 240, 255),
-        SubText = Color3.fromRGB(160, 160, 180),
-        Placeholder = Color3.fromRGB(100, 100, 120),
-        Icon = Color3.fromRGB(160, 160, 180),
-        Success = Color3.fromRGB(80, 200, 120),
-        Warning = Color3.fromRGB(255, 200, 80),
-        Danger = Color3.fromRGB(255, 80, 80),
+        Accent = Color3.fromRGB(114, 137, 218),
+        Background = Color3.fromRGB(12, 14, 20),
+        Surface = Color3.fromRGB(18, 21, 30),
+        Surface2 = Color3.fromRGB(26, 30, 42),
+        Outline = Color3.fromRGB(38, 44, 60),
+        Text = Color3.fromRGB(232, 236, 246),
+        SubText = Color3.fromRGB(155, 165, 185),
+        Placeholder = Color3.fromRGB(100, 110, 130),
+        Icon = Color3.fromRGB(155, 165, 185),
+        Success = Color3.fromRGB(88, 206, 132),
+        Warning = Color3.fromRGB(248, 198, 105),
+        Danger = Color3.fromRGB(255, 96, 96),
         Shadow = Color3.fromRGB(0, 0, 0)
     },
     OLED = {
-        Accent = Color3.fromRGB(255, 255, 255),     -- High Contrast White
-        Background = Color3.fromRGB(0, 0, 0),       -- Pure Black
-        Surface = Color3.fromRGB(15, 15, 15),
-        Surface2 = Color3.fromRGB(30, 30, 30),
-        Outline = Color3.fromRGB(40, 40, 40),
-        Text = Color3.fromRGB(255, 255, 255),
+        Accent = Color3.fromRGB(240, 244, 255),
+        Background = Color3.fromRGB(0, 0, 0),
+        Surface = Color3.fromRGB(12, 12, 12),
+        Surface2 = Color3.fromRGB(22, 22, 22),
+        Outline = Color3.fromRGB(32, 32, 32),
+        Text = Color3.fromRGB(245, 245, 245),
         SubText = Color3.fromRGB(150, 150, 150),
-        Placeholder = Color3.fromRGB(80, 80, 80),
+        Placeholder = Color3.fromRGB(90, 90, 90),
         Icon = Color3.fromRGB(150, 150, 150),
-        Success = Color3.fromRGB(0, 255, 0),
-        Warning = Color3.fromRGB(255, 255, 0),
-        Danger = Color3.fromRGB(255, 0, 0),
+        Success = Color3.fromRGB(120, 230, 140),
+        Warning = Color3.fromRGB(240, 210, 120),
+        Danger = Color3.fromRGB(255, 90, 90),
         Shadow = Color3.fromRGB(0, 0, 0)
     },
     Ocean = {
-        Accent = Color3.fromRGB(0, 150, 200),
-        Background = Color3.fromRGB(10, 25, 35),
-        Surface = Color3.fromRGB(18, 40, 55),
-        Surface2 = Color3.fromRGB(25, 55, 75),
-        Outline = Color3.fromRGB(35, 70, 90),
-        Text = Color3.fromRGB(220, 240, 255),
-        SubText = Color3.fromRGB(140, 180, 200),
-        Placeholder = Color3.fromRGB(100, 130, 150),
-        Icon = Color3.fromRGB(140, 180, 200),
-        Success = Color3.fromRGB(50, 220, 150),
-        Warning = Color3.fromRGB(255, 220, 100),
-        Danger = Color3.fromRGB(255, 80, 80),
+        Accent = Color3.fromRGB(64, 180, 210),
+        Background = Color3.fromRGB(8, 20, 28),
+        Surface = Color3.fromRGB(14, 32, 44),
+        Surface2 = Color3.fromRGB(22, 46, 64),
+        Outline = Color3.fromRGB(32, 60, 78),
+        Text = Color3.fromRGB(224, 240, 250),
+        SubText = Color3.fromRGB(140, 176, 195),
+        Placeholder = Color3.fromRGB(100, 126, 144),
+        Icon = Color3.fromRGB(140, 176, 195),
+        Success = Color3.fromRGB(70, 216, 160),
+        Warning = Color3.fromRGB(248, 208, 110),
+        Danger = Color3.fromRGB(255, 90, 90),
         Shadow = Color3.fromRGB(0, 5, 10)
     },
     Emerald = {
-        Accent = Color3.fromRGB(46, 204, 113),
-        Background = Color3.fromRGB(20, 25, 20),
-        Surface = Color3.fromRGB(30, 40, 30),
-        Surface2 = Color3.fromRGB(40, 55, 40),
-        Outline = Color3.fromRGB(50, 70, 50),
-        Text = Color3.fromRGB(230, 255, 230),
-        SubText = Color3.fromRGB(150, 180, 150),
-        Placeholder = Color3.fromRGB(100, 120, 100),
-        Icon = Color3.fromRGB(150, 180, 150),
-        Success = Color3.fromRGB(46, 204, 113),
-        Warning = Color3.fromRGB(241, 196, 15),
-        Danger = Color3.fromRGB(231, 76, 60),
+        Accent = Color3.fromRGB(70, 210, 140),
+        Background = Color3.fromRGB(14, 20, 16),
+        Surface = Color3.fromRGB(22, 32, 24),
+        Surface2 = Color3.fromRGB(30, 44, 32),
+        Outline = Color3.fromRGB(44, 60, 46),
+        Text = Color3.fromRGB(226, 248, 232),
+        SubText = Color3.fromRGB(150, 178, 156),
+        Placeholder = Color3.fromRGB(100, 120, 106),
+        Icon = Color3.fromRGB(150, 178, 156),
+        Success = Color3.fromRGB(70, 210, 140),
+        Warning = Color3.fromRGB(236, 196, 110),
+        Danger = Color3.fromRGB(230, 92, 92),
         Shadow = Color3.fromRGB(0, 0, 0)
     }
 }
@@ -746,24 +771,28 @@ function Button.new(container, options)
 	self.Callback = options.Callback or function() end
 	self.Disabled = false
 	self.Locked = false
-	self._baseTransparency = 0.25
+	self._baseTransparency = 0.12
 
 	self.Frame = Creator.New("TextButton", {
 		Parent = container,
-		Size = UDim2.new(1, 0, 0, 42),
-		BackgroundColor3 = "Surface2",
+		Size = UDim2.new(1, 0, 0, 44),
+		BackgroundColor3 = "Surface",
 		BackgroundTransparency = self._baseTransparency,
 		Text = "",
 		AutoButtonColor = false,
-		ThemeTag = { BackgroundColor3 = "Surface2" },
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 12)
+	Creator.AddCorner(self.Frame, 14)
 	Creator.AddStroke(self.Frame, {
 		Color = "Outline",
 		Thickness = 1,
-		Transparency = 0.8,
+		Transparency = 0.7,
 		ThemeTag = { Color = "Outline" },
 	})
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
 	self.Maid:GiveTask(self.Frame)
 
 	local rippleConn = Utility.AddRipple(self.Frame, ThemeManager:GetColor("Text"))
@@ -775,7 +804,7 @@ function Button.new(container, options)
 		Position = UDim2.fromOffset(14, 0),
 		BackgroundTransparency = 1,
 		Text = options.Title or "Button",
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -785,7 +814,7 @@ function Button.new(container, options)
 	self.Icon = Creator.New("ImageLabel", {
 		Parent = self.Frame,
 		Size = UDim2.fromOffset(16, 16),
-		Position = UDim2.new(1, -28, 0.5, -8),
+		Position = UDim2.new(1, -26, 0.5, -8),
 		BackgroundTransparency = 1,
 		Image = Utility.GetIcon("chevron-right"),
 		ImageColor3 = "Icon",
@@ -797,7 +826,7 @@ function Button.new(container, options)
 			return
 		end
 		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-			BackgroundTransparency = 0.12,
+			BackgroundTransparency = 0.06,
 		})
 	end))
 	self.Maid:GiveTask(self.Frame.MouseLeave:Connect(function()
@@ -887,7 +916,7 @@ function Toggle.new(container, options, window)
 	self.Flag = options.Flag
 	self.Disabled = false
 	self.Locked = false
-	self._baseTransparency = 0.25
+	self._baseTransparency = 0.12
 
 	if self.Flag and self.Window then
 		self.Window.Flags[self.Flag] = self.Value
@@ -895,15 +924,19 @@ function Toggle.new(container, options, window)
 
 	self.Frame = Creator.New("TextButton", {
 		Parent = container,
-		Size = UDim2.new(1, 0, 0, 42),
-		BackgroundColor3 = "Surface2",
+		Size = UDim2.new(1, 0, 0, 44),
+		BackgroundColor3 = "Surface",
 		BackgroundTransparency = self._baseTransparency,
 		Text = "",
 		AutoButtonColor = false,
-		ThemeTag = { BackgroundColor3 = "Surface2" },
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 12)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
 	self.Maid:GiveTask(self.Frame)
 
 	self.TitleLabel = Creator.New("TextLabel", {
@@ -912,7 +945,7 @@ function Toggle.new(container, options, window)
 		Position = UDim2.fromOffset(14, 0),
 		BackgroundTransparency = 1,
 		Text = options.Title or "Toggle",
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -924,12 +957,12 @@ function Toggle.new(container, options, window)
 		Size = UDim2.fromOffset(46, 24),
 		Position = UDim2.new(1, -14 - 46, 0.5, -12),
 		BackgroundColor3 = self.Value and "Accent" or "Surface2",
-		BackgroundTransparency = 0.05,
+		BackgroundTransparency = 0.15,
 		BorderSizePixel = 0,
 		ThemeTag = { BackgroundColor3 = self.Value and "Accent" or "Surface2" },
 	})
 	Creator.AddCorner(self.Switch, 12)
-	Creator.AddStroke(self.Switch, { Color = "Outline", Thickness = 1, Transparency = 0.75, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.Switch, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
 
 	self.Knob = Creator.New("Frame", {
 		Parent = self.Switch,
@@ -945,7 +978,7 @@ function Toggle.new(container, options, window)
 		if self.Disabled or self.Locked then
 			return
 		end
-		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.12 })
+		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.06 })
 	end))
 	self.Maid:GiveTask(self.Frame.MouseLeave:Connect(function()
 		if self.Disabled or self.Locked then
@@ -1011,7 +1044,7 @@ function Toggle:_syncState()
 	self.Frame.Active = not blocked
 	self.Frame.BackgroundTransparency = blocked and 0.6 or self._baseTransparency
 	self.TitleLabel.TextTransparency = blocked and 0.4 or 0
-	self.Switch.BackgroundTransparency = blocked and 0.4 or 0.05
+	self.Switch.BackgroundTransparency = blocked and 0.4 or 0.15
 end
 
 function Toggle:Destroy()
@@ -1054,7 +1087,7 @@ function Slider.new(container, options, window)
 	self.Flag = options.Flag
 	self.Disabled = false
 	self.Locked = false
-	self._baseTransparency = 0.25
+	self._baseTransparency = 0.12
 
 	if self.Flag and self.Window then
 		self.Window.Flags[self.Flag] = self.Value
@@ -1063,14 +1096,18 @@ function Slider.new(container, options, window)
 	self.Frame = Creator.New("Frame", {
 		Parent = container,
 		Size = UDim2.new(1, 0, 0, 56),
-		BackgroundColor3 = "Surface2",
+		BackgroundColor3 = "Surface",
 		BackgroundTransparency = self._baseTransparency,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface2" },
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 12)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
 	Creator.AddPadding(self.Frame, 14)
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
 	self.Maid:GiveTask(self.Frame)
 
 	self.TitleLabel = Creator.New("TextLabel", {
@@ -1078,7 +1115,7 @@ function Slider.new(container, options, window)
 		Size = UDim2.new(1, -70, 0, 18),
 		BackgroundTransparency = 1,
 		Text = options.Title or "Slider",
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -1102,12 +1139,12 @@ function Slider.new(container, options, window)
 		Parent = self.Frame,
 		Size = UDim2.new(1, 0, 0, 8),
 		Position = UDim2.new(0, 0, 0, 30),
-		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.35,
+		BackgroundColor3 = "Surface2",
+		BackgroundTransparency = 0.3,
 		Text = "",
 		AutoButtonColor = false,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface" },
+		ThemeTag = { BackgroundColor3 = "Surface2" },
 	})
 	Creator.AddCorner(self.Bar, 8)
 
@@ -1282,7 +1319,7 @@ function Dropdown.new(container, options, window)
 	self.Flag = options.Flag
 	self.Disabled = false
 	self.Locked = false
-	self._baseTransparency = 0.25
+	self._baseTransparency = 0.12
 
 	if self.Multi then
 		self.Value = options.Default or {}
@@ -1297,14 +1334,18 @@ function Dropdown.new(container, options, window)
 	self.Frame = Creator.New("Frame", {
 		Parent = container,
 		Size = UDim2.new(1, 0, 0, 70),
-		BackgroundColor3 = "Surface2",
+		BackgroundColor3 = "Surface",
 		BackgroundTransparency = self._baseTransparency,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface2" },
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 12)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
 	Creator.AddPadding(self.Frame, 14)
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
 	self.Maid:GiveTask(self.Frame)
 
 	self.TitleLabel = Creator.New("TextLabel", {
@@ -1312,7 +1353,7 @@ function Dropdown.new(container, options, window)
 		Size = UDim2.new(1, 0, 0, 18),
 		BackgroundTransparency = 1,
 		Text = options.Title or "Dropdown",
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -1321,17 +1362,17 @@ function Dropdown.new(container, options, window)
 
 	self.Display = Creator.New("TextButton", {
 		Parent = self.Frame,
-		Size = UDim2.new(1, 0, 0, 34),
+		Size = UDim2.new(1, 0, 0, 36),
 		Position = UDim2.new(0, 0, 0, 26),
-		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.25,
+		BackgroundColor3 = "Surface2",
+		BackgroundTransparency = 0.3,
 		Text = "",
 		AutoButtonColor = false,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface" },
+		ThemeTag = { BackgroundColor3 = "Surface2" },
 	})
 	Creator.AddCorner(self.Display, 10)
-	Creator.AddStroke(self.Display, { Color = "Outline", Thickness = 1, Transparency = 0.85, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.Display, { Color = "Outline", Thickness = 1, Transparency = 0.75, ThemeTag = { Color = "Outline" } })
 
 	self.DisplayLabel = Creator.New("TextLabel", {
 		Parent = self.Display,
@@ -1539,13 +1580,17 @@ function Dropdown:Open()
 		Parent = main,
 		Size = UDim2.fromOffset(self.Display.AbsoluteSize.X, 0),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.08,
+		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
 		ZIndex = 100,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(self.ListFrame, 12)
-	Creator.AddStroke(self.ListFrame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.ListFrame, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(self.ListFrame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 
 	local mainAbs = main.AbsolutePosition
 	local dispAbs = self.Display.AbsolutePosition
@@ -1568,7 +1613,7 @@ function Dropdown:Open()
 		Size = UDim2.new(1, -20, 0, 30),
 		Position = UDim2.fromOffset(10, 10),
 		BackgroundColor3 = "Surface2",
-		BackgroundTransparency = 0.25,
+		BackgroundTransparency = 0.3,
 		Text = "",
 		PlaceholderText = "Search",
 		Font = Enum.Font.Gotham,
@@ -1712,6 +1757,7 @@ end
 modules["Input"] = function()
 -- Phantasm Input (UI-first remake)
 local Creator = requireModule("Creator")
+local Utility = requireModule("Utility")
 local Maid = requireModule("Maid")
 
 local Input = {}
@@ -1731,7 +1777,7 @@ function Input.new(container, options, window)
 	self.Numeric = options.Numeric == true
 	self.Disabled = false
 	self.Locked = false
-	self._baseTransparency = 0.25
+	self._baseTransparency = 0.12
 
 	if self.Flag and self.Window then
 		self.Window.Flags[self.Flag] = self.Value
@@ -1740,14 +1786,18 @@ function Input.new(container, options, window)
 	self.Frame = Creator.New("Frame", {
 		Parent = container,
 		Size = UDim2.new(1, 0, 0, 70),
-		BackgroundColor3 = "Surface2",
+		BackgroundColor3 = "Surface",
 		BackgroundTransparency = self._baseTransparency,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface2" },
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 12)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
 	Creator.AddPadding(self.Frame, 14)
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
 	self.Maid:GiveTask(self.Frame)
 
 	self.TitleLabel = Creator.New("TextLabel", {
@@ -1755,7 +1805,7 @@ function Input.new(container, options, window)
 		Size = UDim2.new(1, 0, 0, 18),
 		BackgroundTransparency = 1,
 		Text = options.Title or "Input",
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -1766,13 +1816,13 @@ function Input.new(container, options, window)
 		Parent = self.Frame,
 		Size = UDim2.new(1, 0, 0, 34),
 		Position = UDim2.new(0, 0, 0, 26),
-		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.25,
+		BackgroundColor3 = "Surface2",
+		BackgroundTransparency = 0.3,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface" },
+		ThemeTag = { BackgroundColor3 = "Surface2" },
 	})
 	Creator.AddCorner(self.BoxFrame, 10)
-	Creator.AddStroke(self.BoxFrame, { Color = "Outline", Thickness = 1, Transparency = 0.85, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.BoxFrame, { Color = "Outline", Thickness = 1, Transparency = 0.75, ThemeTag = { Color = "Outline" } })
 
 	self.Box = Creator.New("TextBox", {
 		Parent = self.BoxFrame,
@@ -1891,7 +1941,7 @@ function Keybind.new(container, options, window)
 	self.Binding = false
 	self.Disabled = false
 	self.Locked = false
-	self._baseTransparency = 0.25
+	self._baseTransparency = 0.12
 
 	if self.Flag and self.Window then
 		self.Window.Flags[self.Flag] = self.Value
@@ -1899,14 +1949,18 @@ function Keybind.new(container, options, window)
 
 	self.Frame = Creator.New("Frame", {
 		Parent = container,
-		Size = UDim2.new(1, 0, 0, 42),
-		BackgroundColor3 = "Surface2",
+		Size = UDim2.new(1, 0, 0, 44),
+		BackgroundColor3 = "Surface",
 		BackgroundTransparency = self._baseTransparency,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface2" },
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 12)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
 	self.Maid:GiveTask(self.Frame)
 
 	self.TitleLabel = Creator.New("TextLabel", {
@@ -1915,7 +1969,7 @@ function Keybind.new(container, options, window)
 		Position = UDim2.fromOffset(14, 0),
 		BackgroundTransparency = 1,
 		Text = options.Title or "Keybind",
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -1926,15 +1980,15 @@ function Keybind.new(container, options, window)
 		Parent = self.Frame,
 		Size = UDim2.fromOffset(92, 30),
 		Position = UDim2.new(1, -14 - 92, 0.5, -15),
-		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.25,
+		BackgroundColor3 = "Surface2",
+		BackgroundTransparency = 0.3,
 		Text = "",
 		AutoButtonColor = false,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface" },
+		ThemeTag = { BackgroundColor3 = "Surface2" },
 	})
 	Creator.AddCorner(self.Button, 10)
-	Creator.AddStroke(self.Button, { Color = "Outline", Thickness = 1, Transparency = 0.85, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.Button, { Color = "Outline", Thickness = 1, Transparency = 0.75, ThemeTag = { Color = "Outline" } })
 
 	self.BindLabel = Creator.New("TextLabel", {
 		Parent = self.Button,
@@ -1988,7 +2042,7 @@ function Keybind.new(container, options, window)
 		if self.Disabled or self.Locked then
 			return
 		end
-		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.12 })
+		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.06 })
 	end))
 	self.Maid:GiveTask(self.Frame.MouseLeave:Connect(function()
 		if self.Disabled or self.Locked then
@@ -2072,7 +2126,7 @@ function ColorPicker.new(container, options, window)
 	self.Flag = options.Flag
 	self.Disabled = false
 	self.Locked = false
-	self._baseTransparency = 0.25
+	self._baseTransparency = 0.12
 
 	if self.Flag and self.Window then
 		self.Window.Flags[self.Flag] = self.Value
@@ -2080,16 +2134,20 @@ function ColorPicker.new(container, options, window)
 
 	self.Frame = Creator.New("TextButton", {
 		Parent = container,
-		Size = UDim2.new(1, 0, 0, 42),
-		BackgroundColor3 = "Surface2",
+		Size = UDim2.new(1, 0, 0, 44),
+		BackgroundColor3 = "Surface",
 		BackgroundTransparency = self._baseTransparency,
 		Text = "",
 		AutoButtonColor = false,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface2" },
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 12)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
 	self.Maid:GiveTask(self.Frame)
 
 	self.TitleLabel = Creator.New("TextLabel", {
@@ -2098,7 +2156,7 @@ function ColorPicker.new(container, options, window)
 		Position = UDim2.fromOffset(14, 0),
 		BackgroundTransparency = 1,
 		Text = options.Title or "ColorPicker",
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -2113,7 +2171,7 @@ function ColorPicker.new(container, options, window)
 		BorderSizePixel = 0,
 	})
 	Creator.AddCorner(self.Indicator, 10)
-	Creator.AddStroke(self.Indicator, { Color = "Outline", Thickness = 1, Transparency = 0.75, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.Indicator, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
 
 	self.Maid:GiveTask(self.Frame.MouseButton1Click:Connect(function()
 		if self.Disabled or self.Locked then
@@ -2126,7 +2184,7 @@ function ColorPicker.new(container, options, window)
 		if self.Disabled or self.Locked then
 			return
 		end
-		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.12 })
+		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.06 })
 	end))
 	self.Maid:GiveTask(self.Frame.MouseLeave:Connect(function()
 		if self.Disabled or self.Locked then
@@ -2207,13 +2265,17 @@ function ColorPicker:Open()
 		Parent = main,
 		Size = UDim2.fromOffset(280, 190),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.08,
+		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
 		ZIndex = 100,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(self.PopupFrame, 12)
-	Creator.AddStroke(self.PopupFrame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.PopupFrame, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(self.PopupFrame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 	Creator.AddPadding(self.PopupFrame, 12)
 
 	local mainAbs = main.AbsolutePosition
@@ -2570,22 +2632,34 @@ function Section.new(parentContainer, options, window)
 		Size = UDim2.new(1, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.12,
+		BackgroundTransparency = 0.08,
 		BorderSizePixel = 0,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(self.Frame, 14)
 	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
 	Creator.AddPadding(self.Frame, 12)
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 	self.Maid:GiveTask(self.Frame)
+
+	local frameLayout = Instance.new("UIListLayout")
+	frameLayout.Padding = UDim.new(0, 8)
+	frameLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	frameLayout.Parent = self.Frame
+	self.Maid:GiveTask(frameLayout)
 
 	self.Header = Creator.New("TextButton", {
 		Parent = self.Frame,
-		Size = UDim2.new(1, 0, 0, 30),
+		Size = UDim2.new(1, 0, 0, 28),
+		BackgroundColor3 = "Surface2",
 		BackgroundTransparency = 1,
 		Text = "",
 		AutoButtonColor = false,
 	})
+	self.Header.LayoutOrder = 1
 
 	self.Label = Creator.New("TextLabel", {
 		Parent = self.Header,
@@ -2593,7 +2667,7 @@ function Section.new(parentContainer, options, window)
 		Position = UDim2.fromOffset(0, 0),
 		BackgroundTransparency = 1,
 		Text = self.Title,
-		Font = Enum.Font.GothamBold,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -2618,6 +2692,7 @@ function Section.new(parentContainer, options, window)
 		BackgroundTransparency = 1,
 		Visible = self.Opened,
 	})
+	self.Content.LayoutOrder = 2
 
 	local layout = Instance.new("UIListLayout")
 	layout.Padding = UDim.new(0, 10)
@@ -2630,6 +2705,20 @@ function Section.new(parentContainer, options, window)
 			self:SetOpened(not self.Opened)
 		end))
 	end
+
+	self.Maid:GiveTask(self.Header.MouseEnter:Connect(function()
+		if not self.Collapsible then
+			return
+		end
+		Utility.Tween(self.Header, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 0.7,
+		})
+	end))
+	self.Maid:GiveTask(self.Header.MouseLeave:Connect(function()
+		Utility.Tween(self.Header, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 1,
+		})
+	end))
 
 	self:_syncChevron(false)
 	return self
@@ -2736,6 +2825,16 @@ function Tab.new(window, options)
 		ThemeTag = { BackgroundColor3 = "Surface2" },
 	})
 	Creator.AddCorner(self.Button, 10)
+	self.SelectedStroke = Creator.AddStroke(self.Button, {
+		Color = "Accent",
+		Thickness = 1,
+		Transparency = 1,
+		ThemeTag = { Color = "Accent" },
+	})
+	Utility.AddGradient(self.Button, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.2),
+		NumberSequenceKeypoint.new(1, 0.6),
+	}))
 
 	self.Indicator = Creator.New("Frame", {
 		Parent = self.Button,
@@ -2770,7 +2869,7 @@ function Tab.new(window, options)
 		Position = UDim2.fromOffset(leftPad, 0),
 		BackgroundTransparency = 1,
 		Text = self.Title,
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "SubText",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -2792,10 +2891,10 @@ function Tab.new(window, options)
 		Visible = false,
 		ZIndex = 11,
 	})
-	Creator.AddPadding(self.Container, 16)
+	Creator.AddPadding(self.Container, 18)
 
 	local layout = Instance.new("UIListLayout")
-	layout.Padding = UDim.new(0, 10)
+	layout.Padding = UDim.new(0, 12)
 	layout.SortOrder = Enum.SortOrder.LayoutOrder
 	layout.Parent = self.Container
 	self.Maid:GiveTask(layout)
@@ -2810,7 +2909,7 @@ function Tab.new(window, options)
 			return
 		end
 		Utility.Tween(self.Button, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-			BackgroundTransparency = 0.6,
+			BackgroundTransparency = 0.7,
 		})
 	end))
 
@@ -2848,6 +2947,11 @@ function Tab:Select()
 		Utility.Tween(t.Button, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 			BackgroundTransparency = 1,
 		})
+		if t.SelectedStroke then
+			Utility.Tween(t.SelectedStroke, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+				Transparency = 1,
+			})
+		end
 	end
 
 	self.Container.Visible = true
@@ -2864,8 +2968,13 @@ function Tab:Select()
 	tweenToToken(self.Label, "TextColor3", "Text")
 
 	Utility.Tween(self.Button, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
-		BackgroundTransparency = 0.25,
+		BackgroundTransparency = 0.2,
 	})
+	if self.SelectedStroke then
+		Utility.Tween(self.SelectedStroke, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			Transparency = 0.45,
+		})
+	end
 end
 
 function Tab:Destroy()
@@ -3143,6 +3252,10 @@ function Window:_buildUI()
 		Transparency = 0.7,
 		ThemeTag = { Color = "Outline" },
 	})
+	Utility.AddGradient(self.Main, "Surface", "Background", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.18),
+	}))
 
 	-- Background image (optional)
 	if type(self.Options.Background) == "string" and self.Options.Background ~= "" then
@@ -3200,17 +3313,21 @@ function Window:_buildUI()
 	end
 
 	-- Topbar
-	local TOPBAR_H = 46
+	local TOPBAR_H = 52
 	self.Topbar = Creator.New("Frame", {
 		Name = "Topbar",
 		Parent = self.Main,
 		Size = UDim2.new(1, 0, 0, TOPBAR_H),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = material == "opaque" and 0 or 0.15,
+		BackgroundTransparency = material == "opaque" and 0.06 or 0.18,
 		BorderSizePixel = 0,
 		ZIndex = 10,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
+	Utility.AddGradient(self.Topbar, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.2),
+	}))
 
 	local topSep = Creator.New("Frame", {
 		Name = "TopbarSeparator",
@@ -3227,7 +3344,7 @@ function Window:_buildUI()
 	local left = Instance.new("Frame")
 	left.Name = "Left"
 	left.BackgroundTransparency = 1
-	left.Size = UDim2.new(1, -140, 1, 0)
+	left.Size = UDim2.new(1, -150, 1, 0)
 	left.Position = UDim2.fromOffset(14, 0)
 	left.ZIndex = 11
 	left.Parent = self.Topbar
@@ -3254,8 +3371,8 @@ function Window:_buildUI()
 		Position = UDim2.new(0, titleX, 0.5, self.SubTitle ~= "" and -14 or -9),
 		BackgroundTransparency = 1,
 		Text = self.Title,
-		Font = Enum.Font.GothamBold,
-		TextSize = 14,
+		Font = Enum.Font.GothamSemibold,
+		TextSize = 15,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Center,
@@ -3284,15 +3401,15 @@ function Window:_buildUI()
 	local function makeIconButton(iconName)
 		local btn = Creator.New("TextButton", {
 			Parent = self.Topbar,
-			Size = UDim2.fromOffset(30, 30),
+			Size = UDim2.fromOffset(32, 32),
 			BackgroundColor3 = "Surface2",
-			BackgroundTransparency = 1,
+			BackgroundTransparency = 0.85,
 			Text = "",
 			AutoButtonColor = false,
 			ZIndex = 12,
 			ThemeTag = { BackgroundColor3 = "Surface2" },
 		})
-		Creator.AddCorner(btn, 8)
+		Creator.AddCorner(btn, 10)
 
 		local img = Creator.New("ImageLabel", {
 			Parent = btn,
@@ -3306,23 +3423,23 @@ function Window:_buildUI()
 		})
 
 		self.Maid:GiveTask(btn.MouseEnter:Connect(function()
-			Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.35 })
+			Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.55 })
 		end))
 		self.Maid:GiveTask(btn.MouseLeave:Connect(function()
-			Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 1 })
+			Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.85 })
 		end))
 
 		return btn, img
 	end
 
 	local closeBtn = makeIconButton("x")
-	closeBtn.Position = UDim2.new(1, -12 - 30, 0.5, -15)
+	closeBtn.Position = UDim2.new(1, -12 - 32, 0.5, -16)
 	self.Maid:GiveTask(closeBtn.MouseButton1Click:Connect(function()
 		self:Destroy()
 	end))
 
 	local minBtn = makeIconButton("minus")
-	minBtn.Position = UDim2.new(1, -12 - 30 - 30 - 8, 0.5, -15)
+	minBtn.Position = UDim2.new(1, -12 - 32 - 32 - 8, 0.5, -16)
 	self.Maid:GiveTask(minBtn.MouseButton1Click:Connect(function()
 		self:SetMinimized(not self.Minimized)
 	end))
@@ -3334,11 +3451,15 @@ function Window:_buildUI()
 		Size = UDim2.new(0, self.SidebarWidth, 1, -TOPBAR_H),
 		Position = UDim2.fromOffset(0, TOPBAR_H),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = material == "opaque" and 0 or 0.12,
+		BackgroundTransparency = material == "opaque" and 0.06 or 0.18,
 		BorderSizePixel = 0,
 		ZIndex = 10,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
+	Utility.AddGradient(self.Sidebar, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.2),
+	}))
 
 	Creator.New("Frame", {
 		Name = "SidebarSeparator",
@@ -3357,10 +3478,10 @@ function Window:_buildUI()
 		self.SearchBoxFrame = Creator.New("Frame", {
 			Name = "Search",
 			Parent = self.Sidebar,
-			Size = UDim2.new(1, -24, 0, 34),
+			Size = UDim2.new(1, -24, 0, 36),
 			Position = UDim2.fromOffset(12, 12),
 			BackgroundColor3 = "Surface2",
-			BackgroundTransparency = 0.25,
+			BackgroundTransparency = 0.3,
 			BorderSizePixel = 0,
 			ZIndex = 12,
 			ThemeTag = { BackgroundColor3 = "Surface2" },
@@ -3369,14 +3490,18 @@ function Window:_buildUI()
 		Creator.AddStroke(self.SearchBoxFrame, {
 			Color = "Outline",
 			Thickness = 1,
-			Transparency = 0.75,
+			Transparency = 0.7,
 			ThemeTag = { Color = "Outline" },
 		})
+		Utility.AddGradient(self.SearchBoxFrame, "Surface", "Surface2", NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.1),
+			NumberSequenceKeypoint.new(1, 0.25),
+		}))
 
 		local searchIcon = Creator.New("ImageLabel", {
 			Parent = self.SearchBoxFrame,
 			Size = UDim2.fromOffset(16, 16),
-			Position = UDim2.fromOffset(10, 9),
+			Position = UDim2.fromOffset(10, 10),
 			BackgroundTransparency = 1,
 			Image = Utility.GetIcon("search"),
 			ImageColor3 = "Icon",
@@ -3405,7 +3530,7 @@ function Window:_buildUI()
 			self:_applyTabFilter(self.SearchBox.Text)
 		end))
 
-		sidebarTop = 12 + 34 + 10
+		sidebarTop = 12 + 36 + 10
 	end
 
 	self.SidebarList = Creator.New("ScrollingFrame", {
@@ -3423,7 +3548,7 @@ function Window:_buildUI()
 
 	local tabsLayout = Instance.new("UIListLayout")
 	tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	tabsLayout.Padding = UDim.new(0, 6)
+	tabsLayout.Padding = UDim.new(0, 8)
 	tabsLayout.Parent = self.SidebarList
 	self.Maid:GiveTask(tabsLayout)
 
@@ -3433,9 +3558,15 @@ function Window:_buildUI()
 		Parent = self.Main,
 		Size = UDim2.new(1, -self.SidebarWidth, 1, -TOPBAR_H),
 		Position = UDim2.fromOffset(self.SidebarWidth, TOPBAR_H),
-		BackgroundTransparency = 1,
+		BackgroundColor3 = "Surface",
+		BackgroundTransparency = material == "opaque" and 0.06 or 0.18,
 		ZIndex = 10,
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
+	Utility.AddGradient(self.Content, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.2),
+	}))
 
 	-- Notifications container
 	self.NotifyHolder = Instance.new("Frame")
@@ -3966,13 +4097,17 @@ function Window:Dialog(options)
 		Position = UDim2.fromScale(0.5, 0.5),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.05,
+		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
 		ZIndex = 401,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(dialog, 14)
-	Creator.AddStroke(dialog, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(dialog, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(dialog, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 	Creator.AddPadding(dialog, 16)
 	maid:GiveTask(dialog)
 	self.ActiveDialog = dialog
@@ -4147,13 +4282,17 @@ function Window:Popup(options)
 		Size = UDim2.fromOffset(options.Width or 200, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.05,
+		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
 		ZIndex = 360,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(frame, 12)
-	Creator.AddStroke(frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(frame, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 	Creator.AddPadding(frame, 8)
 	self.ActivePopup = frame
 	maid:GiveTask(frame)
@@ -4329,7 +4468,11 @@ function Window:Notify(options)
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(toast, 12)
-	Creator.AddStroke(toast, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(toast, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(toast, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 	Creator.AddPadding(toast, 12)
 
 	local title = Creator.New("TextLabel", {

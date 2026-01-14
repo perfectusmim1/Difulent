@@ -1,5 +1,6 @@
 -- Phantasm Input (UI-first remake)
 local Creator = require(script.Parent.Parent.Parent.Creator)
+local Utility = require(script.Parent.Parent.Parent.Utils.Utility)
 local Maid = require(script.Parent.Parent.Parent.Utils.Maid)
 
 local Input = {}
@@ -19,7 +20,7 @@ function Input.new(container, options, window)
 	self.Numeric = options.Numeric == true
 	self.Disabled = false
 	self.Locked = false
-	self._baseTransparency = 0.25
+	self._baseTransparency = 0.12
 
 	if self.Flag and self.Window then
 		self.Window.Flags[self.Flag] = self.Value
@@ -28,14 +29,18 @@ function Input.new(container, options, window)
 	self.Frame = Creator.New("Frame", {
 		Parent = container,
 		Size = UDim2.new(1, 0, 0, 70),
-		BackgroundColor3 = "Surface2",
+		BackgroundColor3 = "Surface",
 		BackgroundTransparency = self._baseTransparency,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface2" },
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 12)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
 	Creator.AddPadding(self.Frame, 14)
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
 	self.Maid:GiveTask(self.Frame)
 
 	self.TitleLabel = Creator.New("TextLabel", {
@@ -43,7 +48,7 @@ function Input.new(container, options, window)
 		Size = UDim2.new(1, 0, 0, 18),
 		BackgroundTransparency = 1,
 		Text = options.Title or "Input",
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -54,13 +59,13 @@ function Input.new(container, options, window)
 		Parent = self.Frame,
 		Size = UDim2.new(1, 0, 0, 34),
 		Position = UDim2.new(0, 0, 0, 26),
-		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.25,
+		BackgroundColor3 = "Surface2",
+		BackgroundTransparency = 0.3,
 		BorderSizePixel = 0,
-		ThemeTag = { BackgroundColor3 = "Surface" },
+		ThemeTag = { BackgroundColor3 = "Surface2" },
 	})
 	Creator.AddCorner(self.BoxFrame, 10)
-	Creator.AddStroke(self.BoxFrame, { Color = "Outline", Thickness = 1, Transparency = 0.85, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.BoxFrame, { Color = "Outline", Thickness = 1, Transparency = 0.75, ThemeTag = { Color = "Outline" } })
 
 	self.Box = Creator.New("TextBox", {
 		Parent = self.BoxFrame,

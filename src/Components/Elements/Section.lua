@@ -22,22 +22,34 @@ function Section.new(parentContainer, options, window)
 		Size = UDim2.new(1, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.12,
+		BackgroundTransparency = 0.08,
 		BorderSizePixel = 0,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(self.Frame, 14)
 	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
 	Creator.AddPadding(self.Frame, 12)
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 	self.Maid:GiveTask(self.Frame)
+
+	local frameLayout = Instance.new("UIListLayout")
+	frameLayout.Padding = UDim.new(0, 8)
+	frameLayout.SortOrder = Enum.SortOrder.LayoutOrder
+	frameLayout.Parent = self.Frame
+	self.Maid:GiveTask(frameLayout)
 
 	self.Header = Creator.New("TextButton", {
 		Parent = self.Frame,
-		Size = UDim2.new(1, 0, 0, 30),
+		Size = UDim2.new(1, 0, 0, 28),
+		BackgroundColor3 = "Surface2",
 		BackgroundTransparency = 1,
 		Text = "",
 		AutoButtonColor = false,
 	})
+	self.Header.LayoutOrder = 1
 
 	self.Label = Creator.New("TextLabel", {
 		Parent = self.Header,
@@ -45,7 +57,7 @@ function Section.new(parentContainer, options, window)
 		Position = UDim2.fromOffset(0, 0),
 		BackgroundTransparency = 1,
 		Text = self.Title,
-		Font = Enum.Font.GothamBold,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -70,6 +82,7 @@ function Section.new(parentContainer, options, window)
 		BackgroundTransparency = 1,
 		Visible = self.Opened,
 	})
+	self.Content.LayoutOrder = 2
 
 	local layout = Instance.new("UIListLayout")
 	layout.Padding = UDim.new(0, 10)
@@ -82,6 +95,20 @@ function Section.new(parentContainer, options, window)
 			self:SetOpened(not self.Opened)
 		end))
 	end
+
+	self.Maid:GiveTask(self.Header.MouseEnter:Connect(function()
+		if not self.Collapsible then
+			return
+		end
+		Utility.Tween(self.Header, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 0.7,
+		})
+	end))
+	self.Maid:GiveTask(self.Header.MouseLeave:Connect(function()
+		Utility.Tween(self.Header, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+			BackgroundTransparency = 1,
+		})
+	end))
 
 	self:_syncChevron(false)
 	return self

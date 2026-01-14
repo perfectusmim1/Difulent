@@ -28,7 +28,7 @@ function Toggle.new(container, options, window)
 	self.Flag = options.Flag
 	self.Disabled = false
 	self.Locked = false
-	self._baseTransparency = 0.25
+	self._baseTransparency = 0.12
 
 	if self.Flag and self.Window then
 		self.Window.Flags[self.Flag] = self.Value
@@ -36,15 +36,19 @@ function Toggle.new(container, options, window)
 
 	self.Frame = Creator.New("TextButton", {
 		Parent = container,
-		Size = UDim2.new(1, 0, 0, 42),
-		BackgroundColor3 = "Surface2",
+		Size = UDim2.new(1, 0, 0, 44),
+		BackgroundColor3 = "Surface",
 		BackgroundTransparency = self._baseTransparency,
 		Text = "",
 		AutoButtonColor = false,
-		ThemeTag = { BackgroundColor3 = "Surface2" },
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 12)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 14)
+	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.15),
+	}))
 	self.Maid:GiveTask(self.Frame)
 
 	self.TitleLabel = Creator.New("TextLabel", {
@@ -53,7 +57,7 @@ function Toggle.new(container, options, window)
 		Position = UDim2.fromOffset(14, 0),
 		BackgroundTransparency = 1,
 		Text = options.Title or "Toggle",
-		Font = Enum.Font.GothamMedium,
+		Font = Enum.Font.GothamSemibold,
 		TextSize = 13,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
@@ -65,12 +69,12 @@ function Toggle.new(container, options, window)
 		Size = UDim2.fromOffset(46, 24),
 		Position = UDim2.new(1, -14 - 46, 0.5, -12),
 		BackgroundColor3 = self.Value and "Accent" or "Surface2",
-		BackgroundTransparency = 0.05,
+		BackgroundTransparency = 0.15,
 		BorderSizePixel = 0,
 		ThemeTag = { BackgroundColor3 = self.Value and "Accent" or "Surface2" },
 	})
 	Creator.AddCorner(self.Switch, 12)
-	Creator.AddStroke(self.Switch, { Color = "Outline", Thickness = 1, Transparency = 0.75, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(self.Switch, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
 
 	self.Knob = Creator.New("Frame", {
 		Parent = self.Switch,
@@ -86,7 +90,7 @@ function Toggle.new(container, options, window)
 		if self.Disabled or self.Locked then
 			return
 		end
-		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.12 })
+		Utility.Tween(self.Frame, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.06 })
 	end))
 	self.Maid:GiveTask(self.Frame.MouseLeave:Connect(function()
 		if self.Disabled or self.Locked then
@@ -152,7 +156,7 @@ function Toggle:_syncState()
 	self.Frame.Active = not blocked
 	self.Frame.BackgroundTransparency = blocked and 0.6 or self._baseTransparency
 	self.TitleLabel.TextTransparency = blocked and 0.4 or 0
-	self.Switch.BackgroundTransparency = blocked and 0.4 or 0.05
+	self.Switch.BackgroundTransparency = blocked and 0.4 or 0.15
 end
 
 function Toggle:Destroy()

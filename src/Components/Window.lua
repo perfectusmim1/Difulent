@@ -245,6 +245,10 @@ function Window:_buildUI()
 		Transparency = 0.7,
 		ThemeTag = { Color = "Outline" },
 	})
+	Utility.AddGradient(self.Main, "Surface", "Background", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.18),
+	}))
 
 	-- Background image (optional)
 	if type(self.Options.Background) == "string" and self.Options.Background ~= "" then
@@ -302,17 +306,21 @@ function Window:_buildUI()
 	end
 
 	-- Topbar
-	local TOPBAR_H = 46
+	local TOPBAR_H = 52
 	self.Topbar = Creator.New("Frame", {
 		Name = "Topbar",
 		Parent = self.Main,
 		Size = UDim2.new(1, 0, 0, TOPBAR_H),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = material == "opaque" and 0 or 0.15,
+		BackgroundTransparency = material == "opaque" and 0.06 or 0.18,
 		BorderSizePixel = 0,
 		ZIndex = 10,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
+	Utility.AddGradient(self.Topbar, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.2),
+	}))
 
 	local topSep = Creator.New("Frame", {
 		Name = "TopbarSeparator",
@@ -329,7 +337,7 @@ function Window:_buildUI()
 	local left = Instance.new("Frame")
 	left.Name = "Left"
 	left.BackgroundTransparency = 1
-	left.Size = UDim2.new(1, -140, 1, 0)
+	left.Size = UDim2.new(1, -150, 1, 0)
 	left.Position = UDim2.fromOffset(14, 0)
 	left.ZIndex = 11
 	left.Parent = self.Topbar
@@ -356,8 +364,8 @@ function Window:_buildUI()
 		Position = UDim2.new(0, titleX, 0.5, self.SubTitle ~= "" and -14 or -9),
 		BackgroundTransparency = 1,
 		Text = self.Title,
-		Font = Enum.Font.GothamBold,
-		TextSize = 14,
+		Font = Enum.Font.GothamSemibold,
+		TextSize = 15,
 		TextColor3 = "Text",
 		TextXAlignment = Enum.TextXAlignment.Left,
 		TextYAlignment = Enum.TextYAlignment.Center,
@@ -386,15 +394,15 @@ function Window:_buildUI()
 	local function makeIconButton(iconName)
 		local btn = Creator.New("TextButton", {
 			Parent = self.Topbar,
-			Size = UDim2.fromOffset(30, 30),
+			Size = UDim2.fromOffset(32, 32),
 			BackgroundColor3 = "Surface2",
-			BackgroundTransparency = 1,
+			BackgroundTransparency = 0.85,
 			Text = "",
 			AutoButtonColor = false,
 			ZIndex = 12,
 			ThemeTag = { BackgroundColor3 = "Surface2" },
 		})
-		Creator.AddCorner(btn, 8)
+		Creator.AddCorner(btn, 10)
 
 		local img = Creator.New("ImageLabel", {
 			Parent = btn,
@@ -408,23 +416,23 @@ function Window:_buildUI()
 		})
 
 		self.Maid:GiveTask(btn.MouseEnter:Connect(function()
-			Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.35 })
+			Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.55 })
 		end))
 		self.Maid:GiveTask(btn.MouseLeave:Connect(function()
-			Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 1 })
+			Utility.Tween(btn, TweenInfo.new(0.12, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), { BackgroundTransparency = 0.85 })
 		end))
 
 		return btn, img
 	end
 
 	local closeBtn = makeIconButton("x")
-	closeBtn.Position = UDim2.new(1, -12 - 30, 0.5, -15)
+	closeBtn.Position = UDim2.new(1, -12 - 32, 0.5, -16)
 	self.Maid:GiveTask(closeBtn.MouseButton1Click:Connect(function()
 		self:Destroy()
 	end))
 
 	local minBtn = makeIconButton("minus")
-	minBtn.Position = UDim2.new(1, -12 - 30 - 30 - 8, 0.5, -15)
+	minBtn.Position = UDim2.new(1, -12 - 32 - 32 - 8, 0.5, -16)
 	self.Maid:GiveTask(minBtn.MouseButton1Click:Connect(function()
 		self:SetMinimized(not self.Minimized)
 	end))
@@ -436,11 +444,15 @@ function Window:_buildUI()
 		Size = UDim2.new(0, self.SidebarWidth, 1, -TOPBAR_H),
 		Position = UDim2.fromOffset(0, TOPBAR_H),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = material == "opaque" and 0 or 0.12,
+		BackgroundTransparency = material == "opaque" and 0.06 or 0.18,
 		BorderSizePixel = 0,
 		ZIndex = 10,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
+	Utility.AddGradient(self.Sidebar, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.2),
+	}))
 
 	Creator.New("Frame", {
 		Name = "SidebarSeparator",
@@ -459,10 +471,10 @@ function Window:_buildUI()
 		self.SearchBoxFrame = Creator.New("Frame", {
 			Name = "Search",
 			Parent = self.Sidebar,
-			Size = UDim2.new(1, -24, 0, 34),
+			Size = UDim2.new(1, -24, 0, 36),
 			Position = UDim2.fromOffset(12, 12),
 			BackgroundColor3 = "Surface2",
-			BackgroundTransparency = 0.25,
+			BackgroundTransparency = 0.3,
 			BorderSizePixel = 0,
 			ZIndex = 12,
 			ThemeTag = { BackgroundColor3 = "Surface2" },
@@ -471,14 +483,18 @@ function Window:_buildUI()
 		Creator.AddStroke(self.SearchBoxFrame, {
 			Color = "Outline",
 			Thickness = 1,
-			Transparency = 0.75,
+			Transparency = 0.7,
 			ThemeTag = { Color = "Outline" },
 		})
+		Utility.AddGradient(self.SearchBoxFrame, "Surface", "Surface2", NumberSequence.new({
+			NumberSequenceKeypoint.new(0, 0.1),
+			NumberSequenceKeypoint.new(1, 0.25),
+		}))
 
 		local searchIcon = Creator.New("ImageLabel", {
 			Parent = self.SearchBoxFrame,
 			Size = UDim2.fromOffset(16, 16),
-			Position = UDim2.fromOffset(10, 9),
+			Position = UDim2.fromOffset(10, 10),
 			BackgroundTransparency = 1,
 			Image = Utility.GetIcon("search"),
 			ImageColor3 = "Icon",
@@ -507,7 +523,7 @@ function Window:_buildUI()
 			self:_applyTabFilter(self.SearchBox.Text)
 		end))
 
-		sidebarTop = 12 + 34 + 10
+		sidebarTop = 12 + 36 + 10
 	end
 
 	self.SidebarList = Creator.New("ScrollingFrame", {
@@ -525,7 +541,7 @@ function Window:_buildUI()
 
 	local tabsLayout = Instance.new("UIListLayout")
 	tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-	tabsLayout.Padding = UDim.new(0, 6)
+	tabsLayout.Padding = UDim.new(0, 8)
 	tabsLayout.Parent = self.SidebarList
 	self.Maid:GiveTask(tabsLayout)
 
@@ -535,9 +551,15 @@ function Window:_buildUI()
 		Parent = self.Main,
 		Size = UDim2.new(1, -self.SidebarWidth, 1, -TOPBAR_H),
 		Position = UDim2.fromOffset(self.SidebarWidth, TOPBAR_H),
-		BackgroundTransparency = 1,
+		BackgroundColor3 = "Surface",
+		BackgroundTransparency = material == "opaque" and 0.06 or 0.18,
 		ZIndex = 10,
+		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
+	Utility.AddGradient(self.Content, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.2),
+	}))
 
 	-- Notifications container
 	self.NotifyHolder = Instance.new("Frame")
@@ -1068,13 +1090,17 @@ function Window:Dialog(options)
 		Position = UDim2.fromScale(0.5, 0.5),
 		AnchorPoint = Vector2.new(0.5, 0.5),
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.05,
+		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
 		ZIndex = 401,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(dialog, 14)
-	Creator.AddStroke(dialog, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(dialog, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(dialog, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 	Creator.AddPadding(dialog, 16)
 	maid:GiveTask(dialog)
 	self.ActiveDialog = dialog
@@ -1249,13 +1275,17 @@ function Window:Popup(options)
 		Size = UDim2.fromOffset(options.Width or 200, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.05,
+		BackgroundTransparency = 0.06,
 		BorderSizePixel = 0,
 		ZIndex = 360,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(frame, 12)
-	Creator.AddStroke(frame, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(frame, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(frame, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 	Creator.AddPadding(frame, 8)
 	self.ActivePopup = frame
 	maid:GiveTask(frame)
@@ -1431,7 +1461,11 @@ function Window:Notify(options)
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
 	Creator.AddCorner(toast, 12)
-	Creator.AddStroke(toast, { Color = "Outline", Thickness = 1, Transparency = 0.7, ThemeTag = { Color = "Outline" } })
+	Creator.AddStroke(toast, { Color = "Outline", Thickness = 1, Transparency = 0.6, ThemeTag = { Color = "Outline" } })
+	Utility.AddGradient(toast, "Surface2", "Surface", NumberSequence.new({
+		NumberSequenceKeypoint.new(0, 0.05),
+		NumberSequenceKeypoint.new(1, 0.12),
+	}))
 	Creator.AddPadding(toast, 12)
 
 	local title = Creator.New("TextLabel", {
