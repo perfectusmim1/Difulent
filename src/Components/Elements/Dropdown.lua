@@ -131,6 +131,12 @@ function Dropdown.new(container, options, window)
 		end))
 	end
 
+	if container:IsA("ScrollingFrame") then
+		self.Maid:GiveTask(container:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+			self:Close()
+		end))
+	end
+
 	self:UpdateDisplay(true)
 	self:_syncState()
 	return self

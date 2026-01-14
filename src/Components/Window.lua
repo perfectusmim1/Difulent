@@ -512,11 +512,13 @@ function Window:_buildUI()
 		Position = UDim2.fromOffset(0, sidebarTop),
 		BackgroundTransparency = 1,
 		ScrollBarThickness = (self.Options.ScrollBarEnabled == false) and 0 or 3,
+		ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255),
 		CanvasSize = UDim2.new(0, 0, 0, 0),
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		ZIndex = 11,
 	})
 	Creator.AddPadding(self.SidebarList, 10)
+	Utility.EnableDynamicScrollbar(self.SidebarList)
 
 	local tabsLayout = Instance.new("UIListLayout")
 	tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder

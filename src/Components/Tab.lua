@@ -98,12 +98,14 @@ function Tab.new(window, options)
 		BackgroundTransparency = 1,
 		BorderSizePixel = 0,
 		ScrollBarThickness = (window.Options.ScrollBarEnabled == false) and 0 or 3,
+		ScrollBarImageColor3 = Color3.fromRGB(255, 255, 255),
 		AutomaticCanvasSize = Enum.AutomaticSize.Y,
 		CanvasSize = UDim2.new(0, 0, 0, 0),
 		Visible = false,
 		ZIndex = 11,
 	})
 	Creator.AddPadding(self.Container, 18)
+	Utility.EnableDynamicScrollbar(self.Container)
 
 	local layout = Instance.new("UIListLayout")
 	layout.Padding = UDim.new(0, 12)
@@ -123,6 +125,11 @@ function Tab.new(window, options)
 		Utility.Tween(self.Button, TweenInfo.new(0.2, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
 			BackgroundTransparency = 0.8,
 		})
+		if self.SelectedStroke then
+			Utility.Tween(self.SelectedStroke, TweenInfo.new(0.24, Enum.EasingStyle.Quint, Enum.EasingDirection.Out), {
+				Transparency = 0.8,
+			})
+		end
 	end))
 
 	self.Maid:GiveTask(self.Button.MouseLeave:Connect(function()

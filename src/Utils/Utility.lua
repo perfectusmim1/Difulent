@@ -168,4 +168,18 @@ function Utility.Join(t1, t2)
     return t
 end
 
+function Utility.EnableDynamicScrollbar(scrollingFrame)
+    scrollingFrame.ScrollBarImageTransparency = 1
+    local lastScroll = 0
+    scrollingFrame:GetPropertyChangedSignal("CanvasPosition"):Connect(function()
+        lastScroll = os.clock()
+        Utility.Tween(scrollingFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quint), { ScrollBarImageTransparency = 0.5 })
+        task.delay(1.5, function()
+            if os.clock() - lastScroll >= 1.45 then
+                Utility.Tween(scrollingFrame, TweenInfo.new(0.6, Enum.EasingStyle.Quint), { ScrollBarImageTransparency = 1 })
+            end
+        end)
+    end)
+end
+
 return Utility
