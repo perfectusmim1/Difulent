@@ -540,6 +540,19 @@ function Window:_buildUI()
 		NumberSequenceKeypoint.new(1, 0.2),
 	}))
 
+	-- Mica Effect (Noise)
+	local contentNoise = Instance.new("ImageLabel")
+	contentNoise.Name = "MicaNoise"
+	contentNoise.BackgroundTransparency = 1
+	contentNoise.Size = UDim2.fromScale(1, 1)
+	contentNoise.Image = "rbxassetid://12975764033"
+	contentNoise.ImageTransparency = 0.94
+	contentNoise.ScaleType = Enum.ScaleType.Tile
+	contentNoise.TileSize = UDim2.fromOffset(128, 128)
+	contentNoise.ZIndex = 10
+	contentNoise.Parent = self.Content
+	self.Maid:GiveTask(contentNoise)
+
 	-- Notifications container
 	self.NotifyHolder = Instance.new("Frame")
 	self.NotifyHolder.Name = "Notifications"

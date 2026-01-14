@@ -22,16 +22,16 @@ function Section.new(parentContainer, options, window)
 		Size = UDim2.new(1, 0, 0, 0),
 		AutomaticSize = Enum.AutomaticSize.Y,
 		BackgroundColor3 = "Surface",
-		BackgroundTransparency = 0.08,
+		BackgroundTransparency = 0.45,
 		BorderSizePixel = 0,
 		ThemeTag = { BackgroundColor3 = "Surface" },
 	})
-	Creator.AddCorner(self.Frame, 14)
-	Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
+	Creator.AddCorner(self.Frame, 12)
+	self.Stroke = Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.8, ThemeTag = { Color = "Outline" } })
 	Creator.AddPadding(self.Frame, 12)
 	Utility.AddGradient(self.Frame, "Surface2", "Surface", NumberSequence.new({
-		NumberSequenceKeypoint.new(0, 0.05),
-		NumberSequenceKeypoint.new(1, 0.12),
+		NumberSequenceKeypoint.new(0, 0.45),
+		NumberSequenceKeypoint.new(1, 0.55),
 	}))
 	self.Maid:GiveTask(self.Frame)
 

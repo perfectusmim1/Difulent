@@ -9,18 +9,23 @@ function Paragraph.new(container, options)
     
     self.Frame = Creator.New("Frame", {
         Parent = container,
-        Size = UDim2.new(1, 0, 0, 0), -- Auto
-        BackgroundTransparency = 1,
-        AutomaticSize = Enum.AutomaticSize.Y
+        Size = UDim2.new(1, 0, 0, 0),
+        BackgroundColor3 = "Surface",
+        BackgroundTransparency = 0.6,
+        AutomaticSize = Enum.AutomaticSize.Y,
+        ThemeTag = { BackgroundColor3 = "Surface" }
     })
+    Creator.AddCorner(self.Frame, 10)
+    Creator.AddStroke(self.Frame, { Color = "Outline", Thickness = 1, Transparency = 0.85, ThemeTag = { Color = "Outline" } })
+    Creator.AddPadding(self.Frame, 12)
     
     self.TitleLabel = Creator.New("TextLabel", {
         Parent = self.Frame,
         Size = UDim2.new(1, 0, 0, 20),
         BackgroundTransparency = 1,
         Text = options.Title or "Paragraph",
-        Font = Enum.Font.GothamMedium,
-        TextSize = 14,
+        Font = Enum.Font.GothamSemibold,
+        TextSize = 13,
         TextColor3 = "Text",
         TextXAlignment = Enum.TextXAlignment.Left,
         ThemeTag = {TextColor3 = "Text"}
@@ -29,11 +34,11 @@ function Paragraph.new(container, options)
     self.ContentLabel = Creator.New("TextLabel", {
         Parent = self.Frame,
         Size = UDim2.new(1, 0, 0, 0),
-        Position = UDim2.fromOffset(0, 25),
+        Position = UDim2.fromOffset(0, 24),
         BackgroundTransparency = 1,
         Text = options.Content or "",
         Font = Enum.Font.Gotham,
-        TextSize = 13,
+        TextSize = 12,
         TextColor3 = "SubText",
         TextXAlignment = Enum.TextXAlignment.Left,
         TextWrapped = true,
@@ -41,10 +46,6 @@ function Paragraph.new(container, options)
         ThemeTag = {TextColor3 = "SubText"}
     })
     
-    local pad = Instance.new("UIPadding")
-    pad.PaddingBottom = UDim.new(0, 10)
-    pad.Parent = self.Frame
-
     return self
 end
 
