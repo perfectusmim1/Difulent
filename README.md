@@ -16,7 +16,7 @@ Designed for **Executors** (loadstring-friendly).
 ## Quick Start (Executor)
 
 ```lua
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/Difulent/main/dist/main.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/perfectusmim1/Difulent/refs/heads/main/dist/main.lua"))()
 
 local Window = Library.CreateWindow({
     Title = "Phantasm Hub",
